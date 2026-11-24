@@ -1,17 +1,17 @@
-"""生成 Byteferry 的 Windows 图标（.ico，多尺寸）。
+"""生成 DropSluice 的 Windows 图标（.ico，多尺寸）。
 
 为什么手画：仓库里只有插件用的 SVG，Windows 的 exe 图标要 ICO（内含多个位图尺寸），
 用 Pillow 直接画比拉 cairosvg 之类的依赖省事。
 
 用法：python scripts/make-icon.py
-输出：build/assets/byteferry.ico
+输出：build/assets/dropsluice.ico
 """
 from pathlib import Path
 
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "build" / "assets" / "byteferry.ico"
+OUT = ROOT / "build" / "assets" / "dropsluice.ico"
 
 BG = (47, 111, 237, 255)   # #2F6FED
 FG = (255, 255, 255, 255)

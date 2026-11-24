@@ -1,8 +1,8 @@
 /**
- * 验收 dist\Byteferry.exe（打包出来的单文件版）：
+ * 验收 dist\DropSluice.exe（打包出来的单文件版）：
  * 起进程 → 面板接口 → 配对 → 列目录 → 下载并比 SHA256 → 二维码 SVG → 关掉。
  *
- * 用法：node verify/exe-e2e.mjs [--exe dist/Byteferry.exe] [--port 18899]
+ * 用法：node verify/exe-e2e.mjs [--exe dist/DropSluice.exe] [--port 18899]
  */
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
@@ -17,7 +17,7 @@ const argOf = (name, dflt) => {
   const i = argv.indexOf(name);
   return i >= 0 ? argv[i + 1] : dflt;
 };
-const EXE = path.resolve(ROOT, argOf('--exe', 'dist/Byteferry.exe'));
+const EXE = path.resolve(ROOT, argOf('--exe', 'dist/DropSluice.exe'));
 const PORT = Number(argOf('--port', 18899));
 const BASE = `http://127.0.0.1:${PORT}`;
 
@@ -77,7 +77,7 @@ async function main() {
 
   console.log(`启动 ${path.basename(EXE)}（端口 ${PORT}，数据目录 ${path.basename(dataHome)}）`);
   const child = spawn(EXE, ['--port', String(PORT), '--no-open'], {
-    env: { ...process.env, BYTEFERRY_HOME: dataHome },
+    env: { ...process.env, DROPSLUICE_HOME: dataHome },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let out = '';
@@ -104,7 +104,7 @@ async function main() {
     const desktopHtml = await desktop.text();
     ok(
       'GET /desktop 200 且是面板 HTML',
-      desktop.status === 200 && desktopHtml.includes('Byteferry'),
+      desktop.status === 200 && desktopHtml.includes('DropSluice'),
       `${desktopHtml.length} 字节`,
     );
 

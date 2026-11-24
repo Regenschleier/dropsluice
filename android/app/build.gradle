@@ -12,17 +12,17 @@ if (keystorePropsFile.exists()) {
 }
 
 android {
-    namespace 'dev.byteferry.app'
+    namespace 'dev.dropsluice.app'
     compileSdk 34
 
     defaultConfig {
-        applicationId "dev.byteferry.app"
+        applicationId "dev.dropsluice.app"
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
         // 电脑面板靠这段 UA 认出「这是官方 App」而不是随便一个浏览器
-        buildConfigField "String", "UA_TAG", "\"Byteferry/1.0\""
+        buildConfigField "String", "UA_TAG", "\"DropSluice/1.0\""
     }
 
     buildFeatures {

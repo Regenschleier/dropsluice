@@ -78,7 +78,7 @@
       if (!res.ok) return;
       const info = await res.json();
       if (!info.open) {
-        setMsg('电脑那边的配对窗口没打开：请重新运行 Byteferry 或点"重新配对"。', false);
+        setMsg('电脑那边的配对窗口没打开：请重新运行 DropSluice 或点"重新配对"。', false);
         return;
       }
       qrImg.src = '/qr.svg';

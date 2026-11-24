@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Byteferry: send files from this computer to your phone over the LAN, byte-for-byte, with QR pairing.",
+  "description": "DropSluice: send files from this computer to your phone over the LAN, byte-for-byte, with QR pairing.",
   "main": "./index.js",
   "exports": {
     ".": "./index.js",

@@ -1,11 +1,11 @@
 /**
- * Byteferry — Host half.
+ * DropSluice — Host half.
  *
  * Starts (or adopts) the LAN file server and exposes it to this GUI and to the
  * agent as one tool. The phone talks to the server directly on the LAN; this
  * half only manages it and serves the same-origin things the panel needs.
  */
-import { startByteferry } from './lib/app.mjs';
+import { startDropSluice } from './lib/app.mjs';
 import { qrSvg } from './lib/qr.mjs';
 import { primaryLanAddress } from './lib/net.mjs';
 
@@ -13,13 +13,13 @@ export const name = 'phone-drop';
 export const inject = ['tools'];
 
 const PREFIX = '/phone-drop';
-const DEFAULT_PORT = Number(process.env.BYTEFERRY_PORT) || 18888;
+const DEFAULT_PORT = Number(process.env.DROPSLUICE_PORT) || 18888;
 const PROBE_TIMEOUT_MS = 700;
 
 const TAG = '[phone-drop]';
 const log = (...args) => console.log(TAG, ...args);
 
-/** @type {Awaited<ReturnType<typeof startByteferry>> | null} */
+/** @type {Awaited<ReturnType<typeof startDropSluice>> | null} */
 let running = null;
 /** @type {Promise<any> | null} */
 let starting = null;
@@ -30,7 +30,7 @@ function targetPort(port) {
 }
 
 function firewallCommand(port) {
-  return `New-NetFirewallRule -DisplayName "Byteferry" -Direction Inbound -Protocol TCP -LocalPort ${port} -Action Allow -Profile Private,Public -RemoteAddress LocalSubnet`;
+  return `New-NetFirewallRule -DisplayName "DropSluice" -Direction Inbound -Protocol TCP -LocalPort ${port} -Action Allow -Profile Private,Public -RemoteAddress LocalSubnet`;
 }
 
 /** Snapshot of a server this plugin started. */
@@ -58,7 +58,7 @@ async function localSnapshot() {
 }
 
 /**
- * A standalone Byteferry (started from server.mjs, or another session's
+ * A standalone DropSluice (started from server.mjs, or another session's
  * plugin) may already own the port. Its loopback API is enough to show the
  * same pairing panel, so adopt it instead of failing.
  */
@@ -119,7 +119,7 @@ async function ensureStarted(port) {
   const want = targetPort(port);
   starting = (async () => {
     try {
-      const inst = await startByteferry({ port: want, host: '0.0.0.0', openPairing: true, log });
+      const inst = await startDropSluice({ port: want, host: '0.0.0.0', openPairing: true, log });
       running = inst;
       log('服务已启动', inst.url);
       return inst;
@@ -127,11 +127,11 @@ async function ensureStarted(port) {
       if (err && err.code === 'EADDRINUSE') {
         const probe = await probeExisting(want);
         if (probe) {
-          log('端口已被另一个 Byteferry 占用，改为接管', want);
+          log('端口已被另一个 DropSluice 占用，改为接管', want);
           return { adopted: true, port: want };
         }
         throw new Error(
-          `端口 ${want} 已被别的程序占用。换一个端口再试：把环境变量 BYTEFERRY_PORT 设成空闲端口。`,
+          `端口 ${want} 已被别的程序占用。换一个端口再试：把环境变量 DROPSLUICE_PORT 设成空闲端口。`,
         );
       }
       throw err;
@@ -252,7 +252,7 @@ async function handlePanelRequest(req, res, peer) {
             method: 'POST',
             signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
           });
-          if (!probe.ok) throw new Error('接管的那台 Byteferry 拒绝换码');
+          if (!probe.ok) throw new Error('接管的那台 DropSluice 拒绝换码');
         }
       }
       const pair = running?.startPairing();
@@ -299,13 +299,13 @@ async function runAction(args) {
     const snap = await snapshot(port);
     if (inst?.adopted) {
       return textResult(
-        `Byteferry 已经在运行（接管了占端口 ${snap.port} 的那个实例）。\n` +
+        `DropSluice 已经在运行（接管了占端口 ${snap.port} 的那个实例）。\n` +
           `手机地址：${snap.url ?? '（没有局域网 IPv4）'}\n` +
           `配对码：${snap.pairing.code ?? '（未开启配对窗口）'}`,
       );
     }
     return textResult(
-      `Byteferry 已启动。\n` +
+      `DropSluice 已启动。\n` +
         `手机（同一 Wi-Fi）打开：${snap.url ?? '（没找到局域网地址）'}\n` +
         `配对码 ${snap.pairing.code ?? '—'}（10 分钟内有效，用一次就作废）。\n` +
         `二维码在网页右下角「传到手机」里，也可以手机扫这个码。\n` +
@@ -315,7 +315,7 @@ async function runAction(args) {
 
   if (action === 'stop') {
     const stopped = await stopServer();
-    return textResult(stopped ? 'Byteferry 已停止，端口已释放。' : 'Byteferry 本来就没在运行。');
+    return textResult(stopped ? 'DropSluice 已停止，端口已释放。' : 'DropSluice 本来就没在运行。');
   }
 
   if (action === 'pair') {
@@ -326,7 +326,7 @@ async function runAction(args) {
       const res = await fetch(`http://127.0.0.1:${adopted.port}/api/pairing/open`, { method: 'POST' });
       const body = await res.json().catch(() => ({}));
       return textResult(
-        `已换新配对码：${body.code ?? '—'}（接管的是已在运行的 Byteferry）。\n手机打开：${body.url ?? '—'}`,
+        `已换新配对码：${body.code ?? '—'}（接管的是已在运行的 DropSluice）。\n手机打开：${body.url ?? '—'}`,
       );
     }
     const pair = running.startPairing();
@@ -340,8 +340,8 @@ async function runAction(args) {
 
   if (action === 'devices') {
     const snap = await snapshot(port);
-    if (!snap.running) return textResult('Byteferry 没在运行，所以没有已配对的设备信息。');
-    if (snap.devices === null) return textResult('这台 Byteferry 是接管来的实例，设备列表只看得到在它自己的界面上。');
+    if (!snap.running) return textResult('DropSluice 没在运行，所以没有已配对的设备信息。');
+    if (snap.devices === null) return textResult('这台 DropSluice 是接管来的实例，设备列表只看得到在它自己的界面上。');
     if (!snap.devices.length) return textResult('还没有手机配对过。点「传到手机」出二维码，手机扫码配对。');
     const lines = snap.devices.map((d) => {
       const where =
@@ -371,7 +371,7 @@ async function runAction(args) {
   const snap = await snapshot(port);
   if (!snap.running) {
     return textResult(
-      `Byteferry 没在运行。用 phone_drop action=start 启动，然后在网页右下角「传到手机」出二维码。\n` +
+      `DropSluice 没在运行。用 phone_drop action=start 启动，然后在网页右下角「传到手机」出二维码。\n` +
         `（端口会开在 ${snap.port}）`,
     );
   }
@@ -379,7 +379,7 @@ async function runAction(args) {
     ? `配对码 ${snap.pairing.code}，${new Date(snap.pairing.expiresAt).toLocaleTimeString('zh-CN')} 过期`
     : '配对窗口关着（配对成功就自动关）';
   return textResult(
-    `Byteferry ${snap.adopted ? '（接管已在运行的实例）' : ''}运行中。\n` +
+    `DropSluice ${snap.adopted ? '（接管已在运行的实例）' : ''}运行中。\n` +
       `手机地址：${snap.url ?? '（没有局域网 IPv4）'}\n` +
       `${pairLine}\n` +
       `已配对设备：${snap.devices === null ? '未知（接管实例）' : `${snap.devices.length} 台`}`,
@@ -389,7 +389,7 @@ async function runAction(args) {
 const tool = {
   name: 'phone_drop',
   description:
-    'Start, inspect or stop Byteferry — the LAN server that lets the user browse this computer from a phone and download files byte-for-byte (no re-encoding, no compression). Pairing is a 6-digit code shown as a QR on the computer; the phone scans it once and keeps a device token. Use action=start when the user wants to send something to their phone, action=pair to hand out a fresh code, action=status to read the address, action=devices / revoke to manage phones.',
+    'Start, inspect or stop DropSluice — the LAN server that lets the user browse this computer from a phone and download files byte-for-byte (no re-encoding, no compression). Pairing is a 6-digit code shown as a QR on the computer; the phone scans it once and keeps a device token. Use action=start when the user wants to send something to their phone, action=pair to hand out a fresh code, action=status to read the address, action=devices / revoke to manage phones.',
   parameters: {
     type: 'object',
     properties: {

@@ -61,16 +61,16 @@ class Jar {
 const jar = new Jar();
 
 // 不给 baseUrl 时自己起一台一次性服务（独立状态目录 + 随机端口），
-// 绝不碰桌面上正在跑的那台 Byteferry（配对窗口是全局状态，共用会互相踢掉）。
+// 绝不碰桌面上正在跑的那台 DropSluice（配对窗口是全局状态，共用会互相踢掉）。
 const HOME = path.join(os.tmpdir(), `phone-drop-e2e-home-${Date.now()}`);
 const BASE = process.argv[2] ?? (await (async () => {
-  process.env.BYTEFERRY_HOME = HOME;
-  const { startByteferry } = await import('../lib/app.mjs');
+  process.env.DROPSLUICE_HOME = HOME;
+  const { startDropSluice } = await import('../lib/app.mjs');
   let inst = null;
   for (let attempt = 0; attempt < 12 && !inst; attempt++) {
     const port = 19100 + Math.floor(Math.random() * 800);
     try {
-      inst = await startByteferry({ port, host: '127.0.0.1', openPairing: true });
+      inst = await startDropSluice({ port, host: '127.0.0.1', openPairing: true });
     } catch (err) {
       if (err?.code !== 'EADDRINUSE') throw err;
     }
@@ -93,7 +93,7 @@ const req = (p, opts = {}) => fetch(`${BASE}${p}`, {
 const tmp = path.join(os.tmpdir(), `phone-drop-e2e-${Date.now()}`);
 await mkdir(tmp, { recursive: true });
 
-console.log(`\nByteferry 端到端自测 @ ${BASE}\n`);
+console.log(`\nDropSluice 端到端自测 @ ${BASE}\n`);
 
 // ---------- 0. 开一个全新的配对窗口 ----------
 console.log('0) 打开配对窗口');
@@ -182,7 +182,7 @@ await check('GET / 已配对可访问', async () => {
   const r = await req('/');
   assert(r.status === 200, `期望 200，实际 ${r.status}`);
   const html = await r.text();
-  assert(html.includes('Byteferry'), '页面内容不对');
+  assert(html.includes('DropSluice'), '页面内容不对');
   return r.status;
 });
 await check('Bearer 头也能认证', async () => {

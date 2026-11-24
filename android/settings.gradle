@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Byteferry"
+rootProject.name = "DropSluice"
 include ':app'

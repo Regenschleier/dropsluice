@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Byteferry · 这台电脑</title>
+<title>DropSluice · 这台电脑</title>
 <style>
   :root {
     color-scheme: dark;
@@ -84,7 +84,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Byteferry</h1>
+    <h1>DropSluice</h1>
     <span class="pill" id="statusPill">连接中…</span>
   </header>
   <p class="sub">手机和电脑连同一个 Wi-Fi，用手机扫码就能浏览、下载这台电脑上的文件（原样传输，不压缩）。</p>
@@ -119,7 +119,7 @@
   <footer>
     <div>手机连不上？先确认两件事：① 手机和电脑在同一个 Wi-Fi；② 防火墙放行了这个端口。</div>
     <div class="warn">管理员 PowerShell 里跑一次（端口按需替换）：
-      <code>New-NetFirewallRule -DisplayName "Byteferry" -Direction Inbound -Protocol TCP -LocalPort 18888 -Action Allow -Profile Private,Public -RemoteAddress LocalSubnet</code>
+      <code>New-NetFirewallRule -DisplayName "DropSluice" -Direction Inbound -Protocol TCP -LocalPort 18888 -Action Allow -Profile Private,Public -RemoteAddress LocalSubnet</code>
     </div>
     <div>这个页面只允许在本机打开；关掉电脑上那个黑色窗口就等于停止服务。</div>
   </footer>

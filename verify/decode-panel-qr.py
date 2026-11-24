@@ -1,4 +1,4 @@
-"""Rasterize an SVG from Byteferry (single <path> of M x y h w v h h -w z blocks) and decode it."""
+"""Rasterize an SVG from DropSluice (single <path> of M x y h w v h h -w z blocks) and decode it."""
 import re
 import sys
 

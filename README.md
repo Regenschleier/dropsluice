@@ -1,4 +1,4 @@
-# Byteferry · 手机取件
+# DropSluice · 手机取件
 
 在自己电脑上开一个小服务，手机连同一个 Wi-Fi，扫一次二维码，就能：
 
@@ -17,7 +17,7 @@
 
 ## 0. 先看这里：它凭什么说「没有压缩」
 
-很多传输工具会「顺手」把照片转一遍格式、把视频转一遍码率，或者把 zip 重新压一遍。Byteferry 的做法是：
+很多传输工具会「顺手」把照片转一遍格式、把视频转一遍码率，或者把 zip 重新压一遍。DropSluice 的做法是：
 
 1. 下载走 HTTP 原始字节流，带 `Content-Length`，并明确告诉浏览器 `Cache-Control: no-store, no-transform`（别缓存、别改写），响应里**没有** `Content-Encoding`。
 2. 文件夹打包用 **store 模式 zip**：只写目录信息，不压缩内容。zip 里每个文件的字节和磁盘上的字节完全相同。
@@ -72,7 +72,7 @@ node server.mjs --pair          # 服务已经在跑时，再要一个新配对�
 
 跑起来后终端会打印：本机所有局域网地址、配对码、以及用半块字符画的二维码。运行中还接受按键：`p` 换码、`d` 看已配对设备、`q` 退出。
 
-也可以直接用打好的 `Byteferry.exe`（见 §6.1）：双击 → 自动开浏览器面板。
+也可以直接用打好的 `DropSluice.exe`（见 §6.1）：双击 → 自动开浏览器面板。
 
 > 第一次跑之前，Windows 防火墙要放行这个端口（见 §3 第 2 步）。终端和面板里都会把这行命令原样打出来，复制即可。
 
@@ -121,11 +121,11 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 
    ```powershell
    # 管理员 PowerShell 跑一次；端口换了就把 18888 换掉
-   New-NetFirewallRule -DisplayName "Byteferry" -Direction Inbound -Protocol TCP `
+   New-NetFirewallRule -DisplayName "DropSluice" -Direction Inbound -Protocol TCP `
      -LocalPort 18888 -Action Allow -Profile Private,Public -RemoteAddress LocalSubnet
    ```
 
-   删掉这条规则：`Remove-NetFirewallRule -DisplayName "Byteferry"`
+   删掉这条规则：`Remove-NetFirewallRule -DisplayName "DropSluice"`
 3. **看电脑上服务是不是真在跑**：面板顶部有「运行中」；或者命令行窗口还开着。
 4. **端口被别的程序占了**：面板/终端会提示。命令行用 `--port 18900` 换一个，exe 会自动往后试 9 个端口。
 
@@ -172,9 +172,9 @@ python verify/decode-panel-qr.py               # 把面板上的二维码 SVG �
 
 | 产物 | 大小 | 怎么用 | 适合谁 |
 | --- | --- | --- | --- |
-| `dist/Byteferry-1.0.1-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
-| `dist/Byteferry.exe` | ~90 MB | 直接双击（单文件，自带 Node） | 自己放个地方跑 |
-| `dist/Byteferry-Setup-1.0.1.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
+| `dist/DropSluice-1.0.1-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
+| `dist/DropSluice.exe` | ~90 MB | 直接双击（单文件，自带 Node） | 自己放个地方跑 |
+| `dist/DropSluice-Setup-1.0.1.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
 
 exe 是**单文件**：Node 官方 SEA（Single Executable Application）把 `outfile + node.exe` 缝在一起，`public/`、`desktop/` 里的 6 个文件作为 assets 内嵌，双击即用，目标机器**不需要装 Node**。
 
@@ -183,8 +183,8 @@ exe 是**单文件**：Node 官方 SEA（Single Executable Application）把 `ou
 ```powershell
 cd <repo>
 npm --prefix build/tools install            # esbuild + postject + rcedit（一次性）
-node scripts/build-desktop.mjs              # → dist/Byteferry.exe
-node verify/exe-e2e.mjs --exe dist\Byteferry.exe --port 18903
+node scripts/build-desktop.mjs              # → dist/DropSluice.exe
+node verify/exe-e2e.mjs --exe dist\DropSluice.exe --port 18903
 ```
 
 打包顺序有一个坑，记在这里免得再踩：**rcedit（写图标/版本）必须在 postject（注入 SEA blob）之前**。先注入 90 MB 的 blob 再让 rcedit 改资源，rcedit 会直接挂死（等几分钟也不返回）；对没注入的 node.exe 改资源只要 0.1 秒。而且直接调 `build/tools/node_modules/rcedit/bin/rcedit-x64.exe`，别走 npm 那层的跨进程包装（在这台机器上也会挂）。
@@ -198,8 +198,8 @@ winget install --id JRSoftware.InnoSetup --accept-source-agreements --accept-pac
 # ② 抓简体中文语言包到 build\tools\ChineseSimplified.isl（Inno 自带 Languages\ 里没有中文）
 node scripts/fetch-inno-chinese.mjs
 
-# ③ 编译：产物是 dist\Byteferry-Setup-1.0.1.exe
-"C:\Users\<你>\AppData\Local\Programs\Inno Setup 6\ISCC.exe" installer\byteferry.iss
+# ③ 编译：产物是 dist\DropSluice-Setup-1.0.1.exe
+"C:\Users\<你>\AppData\Local\Programs\Inno Setup 6\ISCC.exe" installer\dropsluice.iss
 ```
 
 安装包做成**多模式**：向导里能选「只为我安装」（装进 `%LOCALAPPDATA%\Programs`，不需要管理员）或「为所有用户安装」（弹 UAC，装进 `Program Files`，并可选自动加防火墙规则）。选后者时带一个可勾选项「放行 Windows 防火墙的 18888 端口」。
@@ -208,20 +208,20 @@ node scripts/fetch-inno-chinese.mjs
 
 1.0 版双击后会闪一下就消失。两个原因叠在一起：
 
-1. **数据目录建不出来**：exe 默认把配对记录写到 `%LOCALAPPDATA%\Byteferry`，在那台机器上这个 `mkdir` 返回 `EPERM`，进程刚起来就带着堆栈退出。
-   → 改成**逐级试写**：`%LOCALAPPDATA%\Byteferry` → exe 旁边的 `.data` → 系统临时目录，第一个真能写的胜出（打印在窗口里）。
+1. **数据目录建不出来**：exe 默认把配对记录写到 `%LOCALAPPDATA%\DropSluice`，在那台机器上这个 `mkdir` 返回 `EPERM`，进程刚起来就带着堆栈退出。
+   → 改成**逐级试写**：`%LOCALAPPDATA%\DropSluice` → exe 旁边的 `.data` → 系统临时目录，第一个真能写的胜出（打印在窗口里）。
 2. **端口被占就 1.2 秒退出**：18888 被已经跑着的实例占住时，旧版打印完提示就 `exit`。
-   → 改成：占着端口的是 Byteferry 就打开它的面板并**停在窗口等你按回车**；是别的程序就自动往后试 9 个端口。
+   → 改成：占着端口的是 DropSluice 就打开它的面板并**停在窗口等你按回车**；是别的程序就自动往后试 9 个端口。
 
-现在**所有退出路径都会等一次回车**（判据 `process.stdin.isTTY`，所以脚本调用不会卡住；`BYTEFERRY_NO_PAUSE=1` 可跳过），错误不再一闪而过。
+现在**所有退出路径都会等一次回车**（判据 `process.stdin.isTTY`，所以脚本调用不会卡住；`DROPSLUICE_NO_PAUSE=1` 可跳过），错误不再一闪而过。
 
 复验：
 
 ```powershell
 # 模拟真双击（拿到真控制台）
-cmd /c start "" "$PWD\dist\Byteferry.exe" --no-open
-Get-Process Byteferry        # 5 秒后还在 = 窗口没被关掉
-node verify/exe-e2e.mjs --exe dist\Byteferry.exe --port 18903   # 18 项
+cmd /c start "" "$PWD\dist\DropSluice.exe" --no-open
+Get-Process DropSluice        # 5 秒后还在 = 窗口没被关掉
+node verify/exe-e2e.mjs --exe dist\DropSluice.exe --port 18903   # 18 项
 ```
 
 ### 6.2 手机端：APK
@@ -248,8 +248,8 @@ cd android
 **签名**：release 用 `android/keystore.properties` 指向的 keystore 签名，这个文件和 keystore 本身都**没有进仓库**（`.gitignore` 里有）。你要自己出包，就自己生成一个：
 
 ```powershell
-keytool -genkeypair -keystore build/byteferry-release.jks -alias byteferry `
-  -keyalg RSA -keysize 2048 -validity 10950 -storepass <你的口令> -dname "CN=Byteferry"
+keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
+  -keyalg RSA -keysize 2048 -validity 10950 -storepass <你的口令> -dname "CN=DropSluice"
 ```
 
 装 APK 时注意两点：安卓会拦「未知来源」，要允许一次；首次打开要给**相机**权限（手动输地址不需要）。
@@ -278,12 +278,12 @@ keytool -genkeypair -keystore build/byteferry-release.jks -alias byteferry `
 
 **未验证（不做任何保证）：**
 
-- **安装包（`Byteferry-Setup-1.0.1.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
+- **安装包（`DropSluice-Setup-1.0.1.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
 - **APK 没在真手机上装过**：只验证了产物、签名、manifest，没有真的装到手机、没有用手机相机扫过电脑屏幕。相机预览、CameraX 在这个机型上的表现、`DownloadManager` 的保存路径，都还要一次真机确认。
 - **真机扫码（网页版）**：写这份文档的机器上没有可用的手机取件环境，所有"手机端"结论来自 HTTP 层自测（同一套 API、同一套 cookie 逻辑），没有经过真手机浏览器。
 - **面板在真 DSH 窗口里的渲染**：DSH 网页有启动令牌，非本人浏览器打不开，所以面板长相是用 `verify/panel-harness/`（真实 `client.js` + 真 react + 假数据）截图核对的，**没有在真 DSH 页面里点开过**。打包版自己的面板（`/desktop`）是同一个 HTML，截图用的是 `verify/phone-harness/` 的假数据（见 §0 的说明）。
 - **公网 IP 归属地的线上表现**：离线脚本里查过 `1.1.1.1`，面板截图里那台"公网设备"是假数据（`203.0.113.42` 是文档专用地址），没有真的从外网连进来过。
-- **双击闪退的根因只在一台机器上复现过**：`%LOCALAPPDATA%\Byteferry` 被拒、端口被占这两种情况都实测到并修好了；如果还有别的原因（比如杀毒软件拦 SEA exe）仍可能闪退——所以加了"任何退出路径都等一次回车"，让错误有机会留在屏幕上。
+- **双击闪退的根因只在一台机器上复现过**：`%LOCALAPPDATA%\DropSluice` 被拒、端口被占这两种情况都实测到并修好了；如果还有别的原因（比如杀毒软件拦 SEA exe）仍可能闪退——所以加了"任何退出路径都等一次回车"，让错误有机会留在屏幕上。
 
 ---
 
@@ -316,13 +316,13 @@ phone-drop/
   desktop/
     main.mjs          打包版 exe 的入口（SEA：内嵌静态资源、打印二维码、开面板）
     desktop.html      打包版自己的本机面板（轮询 /api/admin/state）
-    一键开始.bat       绿色版启动器（设 BYTEFERRY_NO_PAUSE=1，退出后自己 pause）
+    一键开始.bat       绿色版启动器（设 DROPSLUICE_NO_PAUSE=1，退出后自己 pause）
     使用说明.txt       装完给最终用户看的三步上手
   scripts/
     build-desktop.mjs 打 exe：esbuild → SEA blob → rcedit 图标 → postject 注入
     make-icon.py      画图标（Pillow，多尺寸 .ico）
     fetch-inno-chinese.mjs  下载 Inno Setup 的简体中文语言包
-  installer/byteferry.iss   Inno Setup 脚本（多模式安装 + 可选防火墙任务）
+  installer/dropsluice.iss   Inno Setup 脚本（多模式安装 + 可选防火墙任务）
   android/            手机端 APK 工程（WebView 外壳 + CameraX 扫码）
   dist/               构建产物（gitignore）
   build/              构建期下载的东西（SDK、Gradle、keystore、tools、日志）——不提交

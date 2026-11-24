@@ -1,4 +1,4 @@
-package dev.byteferry.app;
+package dev.dropsluice.app;
 
 import android.Manifest;
 import android.content.Intent;
