@@ -12,10 +12,10 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { qrSvg } from '../../lib/qr.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.argv[process.argv.indexOf('--port') + 1]) || 18990;
-const HOST_ORIGIN = process.env.DROPSLUICE_HOST_ORIGIN || 'http://127.0.0.1:18888';
 
 const LAN = '192.168.1.20';
 const code = process.env.DROPSLUICE_DEMO_CODE || '123456';
@@ -85,11 +85,24 @@ createServer(async (req, res) => {
       return res.end(JSON.stringify(state));
     }
     if (url.pathname === '/phone-drop/qr.svg') {
-      // 手机服务自己的二维码路由是 /qr.svg（面板那份是 Host 半转发的），别搞混
-      const upstream = await fetch(`${HOST_ORIGIN}/qr.svg`);
-      const body = Buffer.from(await upstream.arrayBuffer());
-      res.writeHead(upstream.status, { 'content-type': 'image/svg+xml', 'cache-control': 'no-store' });
-      return res.end(body);
+      // 给浮层截图用：直接画一张指向演示地址的码，避免把真实局域网 IP 编进图里。
+      res.writeHead(200, { 'content-type': 'image/svg+xml', 'cache-control': 'no-store' });
+      return res.end(qrSvg(state.pairing.url, { size: 320, margin: 2 }));
+    }
+    // 打包版面板（/desktop）的截图：用同一份 desktop.html，接口换成本文件里的假数据，
+    // 这样截图里不会出现真实的局域网 IP 和私人设备名。
+    if (url.pathname === '/desktop') {
+      const html = await readFile(path.resolve(HERE, '..', '..', 'desktop', 'desktop.html'));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(html);
+    }
+    if (url.pathname === '/api/admin/state') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify({ ...state, addresses: [{ address: LAN, iface: 'WLAN', virtual: false }] }));
+    }
+    if (url.pathname === '/qr.svg') {
+      res.writeHead(200, { 'content-type': 'image/svg+xml', 'cache-control': 'no-store' });
+      return res.end(qrSvg(state.pairing.url, { size: 320, margin: 2 }));
     }
     const rel = url.pathname === '/' ? 'harness.html' : url.pathname.slice(1);
     const isClient = rel === 'client.js';
