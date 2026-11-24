@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Phone Drop 面板 · 视觉验收</title>
+<style>
+  :root {
+    /* 拿不到 DSH 主题时，用这几个近似值；面板代码本身只认 --dsw-alias-* */
+    --dsw-alias-bg-elevated: #1c1d21;
+    --dsw-alias-bg-sunken: #141519;
+    --dsw-alias-text-primary: #ececee;
+    --dsw-alias-text-secondary: #9a9aa2;
+    --dsw-alias-border-default: rgba(255, 255, 255, 0.12);
+    --dsw-alias-accent: #4c8dff;
+    --dsw-alias-text-danger: #ff6b6b;
+  }
+  html, body { margin: 0; height: 100%; background: #101114; }
+  body {
+    font: 14px/1.5 -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    color: var(--dsw-alias-text-primary);
+    display: flex;
+    flex-direction: column;
+  }
+  #dock {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid var(--dsw-alias-border-default);
+    color: var(--dsw-alias-text-primary);
+    background: #16171b;
+  }
+  .hint { padding: 16px; color: var(--dsw-alias-text-secondary); font-size: 12px; }
+  #status { padding: 0 16px; color: var(--dsw-alias-text-secondary); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="hint">下面是模拟的输入框底栏（composer dock），面板从这个按钮点开。</div>
+<div id="status"></div>
+<div id="dock"></div>
+
+<script src="node_modules/react/umd/react.development.js"></script>
+<script src="node_modules/react-dom/umd/react-dom.development.js"></script>
+<script>
+  // 把 DSH 客户端那套模块装载器与 require 模拟出来：
+  // client.js 只要求 require('react') / require('react-dom')
+  const require = (id) => {
+    if (id === 'react') return window.React;
+    if (id === 'react-dom') return window.ReactDOM;
+    throw new Error('harness 没提供模块：' + id);
+  };
+  let mod = null;
+  window.__ModuleLoader__ = {
+    load({ id, factory }) {
+      mod = { id, module: factory(require) };
+      window.__loaded = id;
+    },
+  };
+</script>
+<script src="/client.js"></script>
+<script>
+  const root = ReactDOM.createRoot(document.getElementById('dock'));
+  const ctx = {
+    slots: {
+      inject(name, fn) { fn(); this.name = name; },
+      register(desc, Component) {
+        window.__slot = desc;
+        root.render(React.createElement(Component));
+        return () => {};
+      },
+    },
+  };
+  try {
+    mod.module.apply(ctx);
+    document.getElementById('status').textContent =
+      `slot=${JSON.stringify(window.__slot)}  loaded=${window.__loaded}`;
+  } catch (err) {
+    document.getElementById('status').textContent = 'apply 失败：' + err.message;
+  }
+</script>
+</body>
+</html>

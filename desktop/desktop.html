@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phone Drop · 这台电脑</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d10;
+    --panel: #14171d;
+    --line: #262b34;
+    --fg: #edeff3;
+    --muted: #9aa3b2;
+    --accent: #2f6fed;
+    --danger: #e5534b;
+    --ok: #2ea043;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 14px/1.55 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 20px 56px; }
+  header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  h1 { font-size: 20px; margin: 0; font-weight: 650; }
+  .pill {
+    font-size: 12px; padding: 2px 10px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted);
+  }
+  .pill.on { color: #7ee2a8; border-color: #1f5133; background: #10251a; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 18px; margin-bottom: 18px;
+  }
+  .pair { display: flex; gap: 22px; flex-wrap: wrap; }
+  .qr {
+    width: 220px; height: 220px; background: #fff; border-radius: 10px;
+    display: grid; place-items: center; overflow: hidden; flex: none;
+  }
+  .qr img { width: 100%; height: 100%; image-rendering: pixelated; }
+  .qr.empty { color: #6b7280; font-size: 13px; padding: 12px; text-align: center; }
+  .pairinfo { flex: 1 1 260px; min-width: 240px; }
+  .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .addr { display: flex; gap: 8px; margin: 6px 0 16px; }
+  .addr code {
+    flex: 1; background: #0f1218; border: 1px solid var(--line); border-radius: 8px;
+    padding: 9px 11px; font: 13px/1.4 ui-monospace, Consolas, monospace; color: #cfd6e4;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .code { font: 700 26px/1.2 ui-monospace, Consolas, monospace; letter-spacing: .12em; }
+  .countdown { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  button {
+    font: inherit; color: var(--fg); background: #1b2029; border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 13px; cursor: pointer;
+  }
+  button:hover { background: #222836; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { filter: brightness(1.08); }
+  button.ghost { background: transparent; }
+  button.danger { color: var(--danger); border-color: #53302e; background: #23181a; }
+  .row-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  h2 { font-size: 15px; margin: 0 0 4px; font-weight: 620; }
+  .hint { color: var(--muted); font-size: 12.5px; margin: 0 0 14px; }
+  ul.devices { list-style: none; margin: 0; padding: 0; }
+  ul.devices li {
+    border-top: 1px solid var(--line); padding: 13px 0; display: flex;
+    gap: 14px; align-items: flex-start;
+  }
+  ul.devices li:first-child { border-top: none; padding-top: 4px; }
+  .dev-main { flex: 1; min-width: 0; }
+  .dev-name { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .dev-meta { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .dev-meta code { color: #c3ccdb; font: 12.5px ui-monospace, Consolas, monospace; }
+  .empty-note { color: var(--muted); padding: 6px 0 2px; }
+  footer { color: var(--muted); font-size: 12px; margin-top: 26px; line-height: 1.8; }
+  footer code { color: #c3ccdb; }
+  .warn { color: #ffd7a8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Phone Drop</h1>
+    <span class="pill" id="statusPill">连接中…</span>
+  </header>
+  <p class="sub">手机和电脑连同一个 Wi-Fi，用手机扫码就能浏览、下载这台电脑上的文件（原样传输，不压缩）。</p>
+
+  <section class="card">
+    <div class="pair">
+      <div class="qr" id="qrBox"><span>正在生成二维码…</span></div>
+      <div class="pairinfo">
+        <div class="label">手机扫码，或手动打开这个地址</div>
+        <div class="addr">
+          <code id="url">—</code>
+          <button id="btnCopy" class="ghost">复制</button>
+        </div>
+        <div class="label">配对码</div>
+        <div class="code" id="code">------</div>
+        <div class="countdown" id="countdown">—</div>
+        <div class="row-btns">
+          <button id="btnPair" class="primary">换一个配对码</button>
+          <button id="btnQuit" class="danger">停止服务</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>已配对的设备</h2>
+    <p class="hint">每台手机第一次扫码时登记在这里。随时可以「解除」，解除后那台手机要重新扫码才能再连。</p>
+    <ul class="devices" id="devices"></ul>
+    <div class="empty-note" id="noDevices" hidden>还没有设备配对。</div>
+  </section>
+
+  <footer>
+    <div>手机连不上？先确认两件事：① 手机和电脑在同一个 Wi-Fi；② 防火墙放行了这个端口。</div>
+    <div class="warn">管理员 PowerShell 里跑一次（端口按需替换）：
+      <code>New-NetFirewallRule -DisplayName "Phone Drop" -Direction Inbound -Protocol TCP -LocalPort 18888 -Action Allow -Profile Private,Public -RemoteAddress LocalSubnet</code>
+    </div>
+    <div>这个页面只允许在本机打开；关掉电脑上那个黑色窗口就等于停止服务。</div>
+  </footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let timer = null;
+
+function fmtLeft(ms) {
+  if (!ms || ms <= 0) return '已过期';
+  const s = Math.floor(ms / 1000);
+  return `还剩 ${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function relTime(iso) {
+  if (!iso) return '—';
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return '—';
+  const diff = Date.now() - t;
+  if (diff < 60_000) return '刚刚';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} 小时前`;
+  return new Date(t).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function placeText(d) {
+  if (d.network?.kind === 'lan') {
+    return d.network.ssid ? `同一局域网 · Wi-Fi ${d.network.ssid}` : '同一局域网';
+  }
+  if (d.network?.kind === 'public') {
+    return d.location?.place ? `${d.location.place} · ${d.location.isp || ''}`.replace(/ · $/, '') : '公网';
+  }
+  return '来路未知';
+}
+
+function deviceRow(d) {
+  const li = document.createElement('li');
+
+  const main = document.createElement('div');
+  main.className = 'dev-main';
+
+  const name = document.createElement('div');
+  name.className = 'dev-name';
+  name.textContent = d.name || '未命名设备';
+
+  const l1 = document.createElement('div');
+  l1.className = 'dev-meta';
+  const ip = document.createElement('code');
+  ip.textContent = d.ip || '—';
+  l1.append(ip, ' · ' + placeText(d));
+
+  const l2 = document.createElement('div');
+  l2.className = 'dev-meta';
+  const who = d.client?.label || '未知设备';
+  l2.textContent = `${who} · 配对 ${relTime(d.createdAt)} · 最近 ${relTime(d.lastSeenAt)}`;
+
+  main.append(name, l1, l2);
+
+  const btn = document.createElement('button');
+  btn.className = 'danger';
+  btn.textContent = '解除';
+  btn.title = '解除后这台手机必须重新扫码才能再连';
+  btn.onclick = async () => {
+    if (!confirm(`解除「${d.name || '这台设备'}」？它之后要重新扫码才能连上。`)) return;
+    btn.disabled = true;
+    try {
+      await fetch('/api/admin/revoke', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: d.id }),
+      });
+      await refresh();
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  li.append(main, btn);
+  return li;
+}
+
+function render(state) {
+  $('statusPill').textContent = '运行中';
+  $('statusPill').className = 'pill on';
+
+  const url = state.url || '没有找到局域网地址';
+  $('url').textContent = url;
+  $('url').title = url;
+
+  const p = state.pairing || {};
+  $('code').textContent = p.code || '------';
+
+  const box = $('qrBox');
+  if (p.open) {
+    box.classList.remove('empty');
+    box.innerHTML = `<img alt="配对二维码" src="/qr.svg?t=${Date.now()}">`;
+  } else {
+    box.classList.add('empty');
+    box.innerHTML = '<span>配对窗口没开<br>点下面「换一个配对码」</span>';
+  }
+
+  const tick = () => {
+    $('countdown').textContent = p.open && p.expiresAt
+      ? `过期 ${new Date(p.expiresAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}（${fmtLeft(p.expiresAt - Date.now())}）`
+      : '配对窗口已关闭';
+  };
+  tick();
+  clearInterval(timer);
+  timer = setInterval(tick, 1000);
+
+  const list = $('devices');
+  list.textContent = '';
+  const devices = state.devices || [];
+  $('noDevices').hidden = devices.length > 0;
+  for (const d of devices) list.append(deviceRow(d));
+}
+
+async function refresh() {
+  try {
+    const r = await fetch('/api/admin/state', { cache: 'no-store' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    render(await r.json());
+  } catch (err) {
+    $('statusPill').textContent = '已停止';
+    $('statusPill').className = 'pill';
+    $('countdown').textContent = '连不上服务：' + err.message;
+  }
+}
+
+$('btnCopy').onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($('url').textContent);
+    $('btnCopy').textContent = '已复制';
+    setTimeout(() => ($('btnCopy').textContent = '复制'), 1200);
+  } catch {
+    $('btnCopy').textContent = '复制失败';
+  }
+};
+
+$('btnPair').onclick = async () => {
+  await fetch('/api/admin/pair', { method: 'POST' });
+  await refresh();
+};
+
+$('btnQuit').onclick = async () => {
+  if (!confirm('停止服务？手机这边会立刻断开，重新启动后才能再连。')) return;
+  try {
+    await fetch('/api/admin/quit', { method: 'POST' });
+  } catch {
+    // 进程退出时连接可能被重置，正常现象
+  }
+  $('statusPill').textContent = '已停止';
+  $('statusPill').className = 'pill';
+  $('countdown').textContent = '服务已停止，可以关掉这个页面了。';
+};
+
+refresh();
+setInterval(() => {
+  if (document.visibilityState === 'visible') refresh();
+}, 2500);
+</script>
+</body>
+</html>

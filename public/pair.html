@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>Phone Drop · 配对</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="pair-page">
+<main class="pair">
+  <h1>连接这台电脑</h1>
+  <p class="muted">第一次使用要配对：扫电脑上显示的二维码，或者手输 6 位配对码。</p>
+
+  <section id="qrBox" class="card hidden">
+    <img id="qr" alt="配对二维码" width="240" height="240">
+    <div class="code" id="codeText">------</div>
+    <p class="muted small">这个页面是从电脑本机打开的才会显示二维码。</p>
+  </section>
+
+  <section class="card">
+    <label for="code">配对码</label>
+    <input id="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="6 位数字" autocomplete="one-time-code">
+    <label for="name">给这台设备起个名字</label>
+    <input id="name" placeholder="例如 我的手机" maxlength="32">
+    <button id="go">连接</button>
+    <div id="msg" class="msg"></div>
+  </section>
+
+  <p class="muted small">配对成功后，这台设备会拿到一个长期令牌（存在手机浏览器里）。<br>电脑上可以随时解除。</p>
+</main>
+<script src="/pair.js"></script>
+</body>
+</html>

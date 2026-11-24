@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "title": "手机传文件",
+    "description": "在同一局域网内把这台电脑上的文件原样传到手机，扫码配对。"
+  },
+  "panel": {
+    "open": "传到手机",
+    "start": "启动",
+    "stop": "停止",
+    "pair": "换个配对码",
+    "devices": "已配对设备",
+    "revoke": "解除",
+    "scan": "用手机相机扫这个",
+    "copy": "复制链接",
+    "copied": "已复制",
+    "running": "运行中",
+    "stopped": "未启动",
+    "adopted": "已在运行",
+    "code": "配对码",
+    "expires": "过期",
+    "noDevices": "还没有配对过手机",
+    "firewall": "防火墙放行"
+  }
+}

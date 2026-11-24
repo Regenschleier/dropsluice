@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Phone Drop</string>
+
+    <string name="empty_title">连上你的电脑</string>
+    <string name="empty_body">在电脑上打开 Phone Drop，点「传到手机」出二维码；手机连同一个 Wi-Fi 后扫一下就能进。\n\n没有二维码？也可以手动填电脑上显示的地址。</string>
+    <string name="scan_button">扫码连接电脑</string>
+    <string name="manual_button">手动输入地址</string>
+
+    <string name="manual_title">电脑地址</string>
+    <string name="manual_hint">填电脑上显示的那个地址（例如 http://192.168.1.10:18888）。只填 IP 也能认，端口不写就按 18888。</string>
+    <string name="connect">连接</string>
+    <string name="err_bad_url">这个地址看着不对，应该像 http://192.168.1.10:18888</string>
+    <string name="err_load">打不开这台电脑：%1$s\n检查两件事：手机和电脑是不是同一个 Wi-Fi；电脑上的 Phone Drop 有没有在运行。</string>
+
+    <string name="download_started">开始下载：%1$s</string>
+    <string name="downloading">来自 Phone Drop</string>
+    <string name="err_download">下载没起来：%1$s</string>
+    <string name="choose_file">选择要上传的文件</string>
+
+    <string name="scan_hint_start">把电脑上的二维码放进框里</string>
+    <string name="scan_hint">对准电脑上的二维码，不用拍照，识别到就自动关</string>
+    <string name="scan_back">回到上一页</string>
+    <string name="need_camera">不给相机权限就没法扫码，可以在设置里打开，或者回去手动填地址。</string>
+    <string name="err_camera">相机打不开：%1$s</string>
+
+    <string name="action_more">还要做什么</string>
+    <string name="action_rescan">重新扫码换一台电脑</string>
+    <string name="action_manual">手动输入地址</string>
+    <string name="action_forget">清除配对（删掉这台电脑的登录态）</string>
+    <string name="action_exit">退出</string>
+    <string name="forgotten">已清除，下次要重新扫码</string>
+</resources>
