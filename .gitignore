@@ -30,6 +30,9 @@ android/keystore.properties
 *.keystore
 *.apk
 
+# 本机交接笔记（只给自己看，不进仓库）
+HANDOFF.md
+
 # 编辑器/系统
 node_modules/
 .DS_Store
