@@ -1,11 +1,11 @@
 /**
- * 把 Phone Drop 打包成单个 PhoneDrop.exe（Node SEA，绿色免安装）。
+ * 把 Byteferry 打包成单个 Byteferry.exe（Node SEA，绿色免安装）。
  *
  * 流程：
  *   1. esbuild 把 desktop/main.mjs 和它 import 的所有 lib/*.mjs 打成一个 CommonJS 文件
  *   2. 生成 sea-config.json（含 5 个手机页面 + 桌面面板 HTML，作为 SEA assets 打进 exe）
  *   3. node --experimental-sea-config 生成 blob
- *   4. 复制当前 node.exe → dist/PhoneDrop.exe，用 postject 把 blob 注进去
+ *   4. 复制当前 node.exe → dist/Byteferry.exe，用 postject 把 blob 注进去
  *   5. 有 rcedit 的话再改一下版本信息和图标（可选，失败只警告）
  *
  * 用法：node scripts/build-desktop.mjs
@@ -48,11 +48,11 @@ await esbuild.build({
   platform: 'node',
   format: 'cjs',
   target: 'node22',
-  outfile: path.join(BUILD, 'phonedrop.cjs'),
+  outfile: path.join(BUILD, 'byteferry.cjs'),
   // import.meta.url 在 CJS 里不存在，lib/root.mjs 有 try/catch 兜底，这里别刷警告
   logOverride: { 'empty-import-meta': 'silent' },
   banner: {
-    js: '/* Phone Drop —— 由 scripts/build-desktop.mjs 生成，别手改 */',
+    js: '/* Byteferry —— 由 scripts/build-desktop.mjs 生成，别手改 */',
   },
 });
 
@@ -65,8 +65,8 @@ for (const [key, rel] of Object.entries(ASSETS)) {
   assets[key] = abs;
 }
 const seaConfig = {
-  main: path.join(BUILD, 'phonedrop.cjs'),
-  output: path.join(BUILD, 'phonedrop.blob'),
+  main: path.join(BUILD, 'byteferry.cjs'),
+  output: path.join(BUILD, 'byteferry.blob'),
   disableExperimentalSEAWarning: true,
   useSnapshot: false,
   useCodeCache: false,
@@ -82,23 +82,23 @@ run(process.execPath, ['--experimental-sea-config', seaConfigPath]);
 // ---------- 4. 复制 node.exe、写图标、注入 blob ----------
 step('4/5 复制 node.exe → 写图标/版本 → 注入 SEA blob');
 fs.mkdirSync(DIST, { recursive: true });
-const exePath = path.join(DIST, 'PhoneDrop.exe');
+const exePath = path.join(DIST, 'Byteferry.exe');
 fs.copyFileSync(process.execPath, exePath);
 
 // 注意顺序：rcedit 必须在 postject 之前。注入了 90 MB blob 之后再改资源会挂住不返回。
 // 也直接用 rcedit 的 exe 而不是 npm 那层 cross-spawn 包装（包装在这台机器上会挂住）。
 const rceditExe = path.join(TOOLS, 'rcedit', 'bin', 'rcedit-x64.exe');
-const ico = path.join(ROOT, 'build', 'assets', 'phonedrop.ico');
+const ico = path.join(ROOT, 'build', 'assets', 'byteferry.ico');
 if (fs.existsSync(rceditExe) && fs.existsSync(ico)) {
   const args = [
     exePath,
     '--set-icon', ico,
     '--set-file-version', '1.0.1.0',
     '--set-product-version', '1.0.1.0',
-    '--set-version-string', 'CompanyName', 'Phone Drop',
-    '--set-version-string', 'FileDescription', 'Phone Drop - 手机传文件',
-    '--set-version-string', 'ProductName', 'Phone Drop',
-    '--set-version-string', 'OriginalFilename', 'PhoneDrop.exe',
+    '--set-version-string', 'CompanyName', 'Byteferry',
+    '--set-version-string', 'FileDescription', 'Byteferry - 手机传文件',
+    '--set-version-string', 'ProductName', 'Byteferry',
+    '--set-version-string', 'OriginalFilename', 'Byteferry.exe',
     '--set-version-string', 'LegalCopyright', '本机自用',
   ];
   try {
@@ -117,7 +117,7 @@ run(process.execPath, [
   postjectCli,
   exePath,
   'NODE_SEA_BLOB',
-  path.join(BUILD, 'phonedrop.blob'),
+  path.join(BUILD, 'byteferry.blob'),
   '--sentinel-fuse',
   'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
 ]);

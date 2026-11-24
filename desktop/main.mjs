@@ -1,8 +1,8 @@
 /**
- * 桌面版入口（PhoneDrop.exe 跑的也是这个文件）。
+ * 桌面版入口（Byteferry.exe 跑的也是这个文件）。
  *
  * 干的事：
- *   1. 起 Phone Drop 服务（默认 18888）
+ *   1. 起 Byteferry 服务（默认 18888）
  *   2. 在控制台打一遍地址和配对码，并把二维码用半块字符画出来（手机扫这个也能扫）
  *   3. 打开默认浏览器到本机面板 http://127.0.0.1:<端口>/desktop（那里有正经二维码和已配对设备）
  *
@@ -11,7 +11,7 @@
  */
 import { spawn } from 'node:child_process';
 
-import { startPhoneDrop } from '../lib/app.mjs';
+import { startByteferry } from '../lib/app.mjs';
 import { printTerminalQr } from '../lib/terminal-qr.mjs';
 import { lanAddresses } from '../lib/net.mjs';
 import { dataDir } from '../lib/state.mjs';
@@ -42,7 +42,7 @@ function loadSeaAssets() {
 }
 
 function parseArgs(argv) {
-  const opts = { port: Number(process.env.PHONE_DROP_PORT || 18888), open: true };
+  const opts = { port: Number(process.env.BYTEFERRY_PORT || 18888), open: true };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--port' || a === '-p') opts.port = Number(argv[++i]);
@@ -70,7 +70,7 @@ function openBrowser(url) {
   }
 }
 
-/** 端口被占时，看看是不是已经有一个 Phone Drop 在跑；是的话直接把面板打开 */
+/** 端口被占时，看看是不是已经有一个 Byteferry 在跑；是的话直接把面板打开 */
 async function probeExisting(port) {
   try {
     const res = await fetch(`http://127.0.0.1:${port}/api/admin/state`, {
@@ -86,10 +86,10 @@ async function probeExisting(port) {
 /**
  * 双击启动时，控制台窗口是"进程的窗口"：进程一退，窗口立刻消失，用户什么都看不到。
  * 所以在任何"要退出了"的路径上，只要是交互式控制台（双击就是），就等一次回车再退。
- * 被脚本/自测拉起时 stdin 不是 TTY，不会卡住；`一键开始.bat` 自己会 pause，用 PHONE_DROP_NO_PAUSE 跳过。
+ * 被脚本/自测拉起时 stdin 不是 TTY，不会卡住；`一键开始.bat` 自己会 pause，用 BYTEFERRY_NO_PAUSE 跳过。
  */
 function pauseIfInteractive() {
-  if (process.env.PHONE_DROP_NO_PAUSE) return Promise.resolve();
+  if (process.env.BYTEFERRY_NO_PAUSE) return Promise.resolve();
   if (!process.stdin.isTTY) return Promise.resolve();
   return new Promise((resolve) => {
     console.log('');
@@ -108,10 +108,10 @@ function banner({ port, lan, code, pairUrl, expiresAt, existing }) {
   const line = '─'.repeat(60);
   console.log('');
   console.log(line);
-  console.log('  Phone Drop · 手机传文件');
+  console.log('  Byteferry · 手机传文件');
   console.log(line);
   if (existing) {
-    console.log('  这个端口上已经有一个 Phone Drop 在跑了，直接用它。');
+    console.log('  这个端口上已经有一个 Byteferry 在跑了，直接用它。');
     console.log('');
     console.log(`  地址： http://${lan || '127.0.0.1'}:${port}/`);
     console.log(`  面板： http://127.0.0.1:${port}/desktop`);
@@ -166,7 +166,7 @@ function banner({ port, lan, code, pairUrl, expiresAt, existing }) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
-    console.log('用法：PhoneDrop.exe [--port 18888] [--no-open]');
+    console.log('用法：Byteferry.exe [--port 18888] [--no-open]');
     await pauseIfInteractive();
     return;
   }
@@ -177,7 +177,7 @@ async function main() {
   let app;
   let usedPort = opts.port;
   try {
-    app = await startPhoneDrop({
+    app = await startByteferry({
       port: opts.port,
       assets,
       log,
@@ -186,7 +186,7 @@ async function main() {
   } catch (err) {
     if (err?.code !== 'EADDRINUSE') throw err;
 
-    // ① 端口上跑的是不是另一个 Phone Drop？是 → 直接用它，省得开两套服务
+    // ① 端口上跑的是不是另一个 Byteferry？是 → 直接用它，省得开两套服务
     const existing = await probeExisting(opts.port);
     if (existing) {
       banner({ port: opts.port, lan: existing.lan, existing });
@@ -194,7 +194,7 @@ async function main() {
       if (opts.open) openBrowser(panel);
       console.log(`  面板已经在浏览器里打开了：${panel}`);
       console.log('  这个窗口可以直接关掉（它只是把面板叫出来的，没有在跑服务）。');
-      console.log(`  想另起一个独立的服务、不和它共用端口： PhoneDrop.exe --port 18899`);
+      console.log(`  想另起一个独立的服务、不和它共用端口： Byteferry.exe --port 18899`);
       await pauseIfInteractive();
       return;
     }
@@ -203,7 +203,7 @@ async function main() {
     let picked = null;
     for (let p = opts.port + 1; p <= opts.port + 9 && !picked; p++) {
       try {
-        app = await startPhoneDrop({ port: p, assets, log, onQuit: () => process.exit(0) });
+        app = await startByteferry({ port: p, assets, log, onQuit: () => process.exit(0) });
         picked = p;
       } catch (e) {
         if (e?.code !== 'EADDRINUSE') throw e;
@@ -211,7 +211,7 @@ async function main() {
     }
     if (!picked) {
       console.error(`\n  端口 ${opts.port}–${opts.port + 9} 全被占用了。`);
-      console.error(`  换个端口再来： PhoneDrop.exe --port 19000\n`);
+      console.error(`  换个端口再来： Byteferry.exe --port 19000\n`);
       process.exitCode = 2;
       await pauseIfInteractive();
       return;

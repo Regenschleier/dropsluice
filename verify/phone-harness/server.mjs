@@ -69,8 +69,8 @@ const LISTINGS = {
   ],
   [`${HOME}\\Desktop`]: desktop,
   [`${HOME}\\Downloads`]: [
-    { name: 'PhoneDrop-1.0.1-portable.zip', type: 'file', size: 35_061_760, mtime: Date.UTC(2026, 10, 23, 1, 30) },
-    { name: 'PhoneDrop-1.0.0.apk', type: 'file', size: 3_449_651, mtime: Date.UTC(2026, 10, 23, 1, 12) },
+    { name: 'Byteferry-1.0.1-portable.zip', type: 'file', size: 35_061_760, mtime: Date.UTC(2026, 10, 23, 1, 30) },
+    { name: 'Byteferry-1.0.0.apk', type: 'file', size: 3_449_651, mtime: Date.UTC(2026, 10, 23, 1, 12) },
   ],
 };
 

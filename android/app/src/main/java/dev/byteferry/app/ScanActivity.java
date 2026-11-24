@@ -1,4 +1,4 @@
-package dev.phonedrop.app;
+package dev.byteferry.app;
 
 import android.Manifest;
 import android.content.Intent;

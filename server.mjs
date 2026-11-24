@@ -10,7 +10,7 @@
  *   node server.mjs --host 127.0.0.1  # 只允许本机访问（调试用）
  *   node server.mjs --open          # 顺便用浏览器打开本机页面
  */
-import { startPhoneDrop } from './lib/app.mjs';
+import { startByteferry } from './lib/app.mjs';
 import { lanAddresses } from './lib/net.mjs';
 import { printTerminalQr } from './lib/terminal-qr.mjs';
 
@@ -21,7 +21,7 @@ function arg(name, fallback) {
 }
 const flag = (name) => argv.includes(`--${name}`);
 
-const port = Number(arg('port', process.env.PHONE_DROP_PORT || 18888));
+const port = Number(arg('port', process.env.BYTEFERRY_PORT || 18888));
 const host = arg('host', '0.0.0.0');
 
 // `--pair`：服务已经在跑的时候，让它换一张新二维码（不用关掉重开）
@@ -45,13 +45,13 @@ if (flag('pair')) {
   process.exit(0);
 }
 
-const server = await startPhoneDrop({ port, host, openPairing: true, log: (m) => console.log(`[${new Date().toLocaleTimeString()}] ${m}`) });
+const server = await startByteferry({ port, host, openPairing: true, log: (m) => console.log(`[${new Date().toLocaleTimeString()}] ${m}`) });
 
 const info = server.pairingInfo();
 const lans = lanAddresses();
 
 console.log('');
-console.log('  Phone Drop 已启动');
+console.log('  Byteferry 已启动');
 console.log('');
 for (const a of lans) {
   console.log(`  局域网地址：http://${a.address}:${port}/   （${a.iface}${a.virtual ? '，虚拟网卡，可能连不通' : ''}）`);
@@ -72,7 +72,7 @@ if (info.open && info.url) {
 
 console.log('  提示：手机连不上多半是 Windows 防火墙拦了。');
 console.log('        管理员 PowerShell 里跑（把端口换成你的）：');
-console.log(`        New-NetFirewallRule -DisplayName "Phone Drop" -Direction Inbound -Protocol TCP -LocalPort ${port} -Action Allow -Profile Private`);
+console.log(`        New-NetFirewallRule -DisplayName "Byteferry" -Direction Inbound -Protocol TCP -LocalPort ${port} -Action Allow -Profile Private`);
 console.log('');
 console.log('  运行中可用（在窗口里敲字母再回车）：');
 console.log('    p  换一张新二维码（还要配第二台手机时用）');

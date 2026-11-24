@@ -1,10 +1,10 @@
-; Phone Drop 安装包脚本（Inno Setup 6）
+; Byteferry 安装包脚本（Inno Setup 6）
 ;
 ; 用法：
-;   1. node scripts/build-desktop.mjs      产出 dist\PhoneDrop.exe
+;   1. node scripts/build-desktop.mjs      产出 dist\Byteferry.exe
 ;   2. 编译本文件（ISCC.exe 路径两处都可能，按实际取）：
-;        & "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" installer\phonedrop.iss
-;   3. 产物：dist\PhoneDrop-Setup-<版本>.exe
+;        & "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" installer\byteferry.iss
+;   3. 产物：dist\Byteferry-Setup-<版本>.exe
 ;
 ; 安装模式（重要）：
 ;   PrivilegesRequired=lowest + OverridesAllowed=dialog
@@ -15,11 +15,11 @@
 ; 防火墙：需要管理员的那一步只在管理员安装模式里做；普通权限安装装完后由面板/说明文档
 ; 告诉用户怎么手动放行（netsh 一行命令）。
 
-#define MyAppName "Phone Drop"
+#define MyAppName "Byteferry"
 #define MyAppVersion "1.0.1"
-#define MyAppPublisher "Phone Drop"
-#define MyAppExeName "PhoneDrop.exe"
-#define MyFirewallRule "Phone Drop"
+#define MyAppPublisher "Byteferry"
+#define MyAppExeName "Byteferry.exe"
+#define MyFirewallRule "Byteferry"
 #define MyPort "18888"
 
 [Setup]
@@ -31,8 +31,8 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=..\dist
-OutputBaseFilename=PhoneDrop-Setup-{#MyAppVersion}
-SetupIconFile=..\build\assets\phonedrop.ico
+OutputBaseFilename=Byteferry-Setup-{#MyAppVersion}
+SetupIconFile=..\build\assets\byteferry.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 Compression=lzma2/max
 SolidCompression=yes

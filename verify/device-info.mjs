@@ -64,9 +64,9 @@ console.log('2) 地址判定');
 
 console.log('3) 临时服务 + 配对后看设备清单');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pd-dev-'));
-process.env.PHONE_DROP_HOME = tmp;
-const { startPhoneDrop } = await import('../lib/app.mjs');
-const server = await startPhoneDrop({ port: 19277, host: '127.0.0.1', openPairing: true, log: () => {} });
+process.env.BYTEFERRY_HOME = tmp;
+const { startByteferry } = await import('../lib/app.mjs');
+const server = await startByteferry({ port: 19277, host: '127.0.0.1', openPairing: true, log: () => {} });
 try {
   const base = 'http://127.0.0.1:19277';
   const pairing = await (await fetch(`${base}/api/pairing`)).json();

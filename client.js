@@ -1,5 +1,5 @@
 /**
- * Phone Drop — Client half.
+ * Byteferry — Client half.
  *
  * A small "传到手机" button in the composer dock that opens a panel with the
  * pairing QR. Everything is fetched from the Host half on the same origin, so
@@ -375,7 +375,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function PhoneDropDock() {
+    function ByteferryDock() {
       const [open, setOpen] = useState(false);
       const [mounted, setMounted] = useState(false);
 
@@ -439,7 +439,7 @@ window.__ModuleLoader__.load({
         ctx.slots.inject('conversation.composer.dock', () =>
           ctx.slots.register(
             { name: 'conversation.composer.dock', id: 'phone-drop', order: 6 },
-            PhoneDropDock,
+            ByteferryDock,
           ),
         );
       },

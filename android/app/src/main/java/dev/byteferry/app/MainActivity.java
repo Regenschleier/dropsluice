@@ -1,4 +1,4 @@
-package dev.phonedrop.app;
+package dev.byteferry.app;
 
 import android.app.AlertDialog;
 import android.app.DownloadManager;
@@ -33,7 +33,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Phone Drop 的手机端外壳。
+ * Byteferry 的手机端外壳。
  *
  * 它本身不实现任何文件协议：真正的文件服务跑在电脑上（默认 18888 端口），
  * 这个 App 只做三件事——

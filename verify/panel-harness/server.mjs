@@ -15,10 +15,10 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.argv[process.argv.indexOf('--port') + 1]) || 18990;
-const HOST_ORIGIN = process.env.PHONE_DROP_HOST_ORIGIN || 'http://127.0.0.1:18888';
+const HOST_ORIGIN = process.env.BYTEFERRY_HOST_ORIGIN || 'http://127.0.0.1:18888';
 
 const LAN = '192.168.1.20';
-const code = process.env.PHONE_DROP_DEMO_CODE || '123456';
+const code = process.env.BYTEFERRY_DEMO_CODE || '123456';
 
 const now = Date.now();
 const MIN = 60 * 1000;
@@ -67,7 +67,7 @@ const state = {
       location: { place: '中国 · 上海', isp: 'China Telecom', source: 'ip-api.com', at: now },
     },
   ],
-  firewallCommand: 'New-NetFirewallRule -DisplayName "Phone Drop"',
+  firewallCommand: 'New-NetFirewallRule -DisplayName "Byteferry"',
 };
 
 const TYPES = {

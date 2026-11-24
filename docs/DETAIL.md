@@ -1,4 +1,4 @@
-# Phone Drop 详情
+# Byteferry 详情
 
 一个 DSH bundle，同时也是一份能独立跑的文件服务。装上之后，输入框上方多一个「📱 传到手机」按钮：点开就是配对二维码，手机扫一次，之后就能在手机上浏览这台电脑的磁盘、原样下载文件、把文件传回来。
 
@@ -113,9 +113,9 @@
 打包相关的几个实现点：
 
 - **SEA 里没有 `import.meta.url`**：bundle 成 CJS 之后这个符号为空，所以 `lib/root.mjs` 里 `appRoot()` 先 try `fileURLToPath(import.meta.url)`，失败就退回 `path.dirname(process.execPath)`——exe 场景下就是"exe 所在目录"。
-- **数据目录是"逐级试写"挑出来的**，不是写死一个路径：`PHONE_DROP_HOME` → `%LOCALAPPDATA%\PhoneDrop` → exe 旁边 `.data` → 临时目录，每个候选都 `mkdir` + 写一个探针文件再删掉，第一个真能写的胜出（结果缓存）。原因很具体：某些机器/安全策略下 `%LOCALAPPDATA%\PhoneDrop` 的 `mkdir` 会直接 `EPERM`，写死的话 exe 一启动就崩、窗口一闪就没。选中路径会打印在终端 banner 和面板上。
-- **所有退出路径都要"等一次回车"**（`desktop/main.mjs` 的 `pauseIfInteractive()`）：双击启动时控制台是进程自己的窗口，进程一退窗口立刻消失，用户什么都看不到。判断条件是 `process.stdin.isTTY`，所以被脚本/自测拉起时不会卡住；`PHONE_DROP_NO_PAUSE=1` 可跳过（`一键开始.bat` 就是这么用的，它自己 `pause`）。
-- **端口被占时的两条路**：占着 18888 的如果是另一个 Phone Drop（比如 DSH 插件那半），就打它的 `/api/admin/state` 拿来配对码、打开它的面板、然后停在自己的暂停提示上；如果是别的程序，自动往后试 18889…18897，并把换端口的事写进窗口。
+- **数据目录是"逐级试写"挑出来的**，不是写死一个路径：`BYTEFERRY_HOME` → `%LOCALAPPDATA%\Byteferry` → exe 旁边 `.data` → 临时目录，每个候选都 `mkdir` + 写一个探针文件再删掉，第一个真能写的胜出（结果缓存）。原因很具体：某些机器/安全策略下 `%LOCALAPPDATA%\Byteferry` 的 `mkdir` 会直接 `EPERM`，写死的话 exe 一启动就崩、窗口一闪就没。选中路径会打印在终端 banner 和面板上。
+- **所有退出路径都要"等一次回车"**（`desktop/main.mjs` 的 `pauseIfInteractive()`）：双击启动时控制台是进程自己的窗口，进程一退窗口立刻消失，用户什么都看不到。判断条件是 `process.stdin.isTTY`，所以被脚本/自测拉起时不会卡住；`BYTEFERRY_NO_PAUSE=1` 可跳过（`一键开始.bat` 就是这么用的，它自己 `pause`）。
+- **端口被占时的两条路**：占着 18888 的如果是另一个 Byteferry（比如 DSH 插件那半），就打它的 `/api/admin/state` 拿来配对码、打开它的面板、然后停在自己的暂停提示上；如果是别的程序，自动往后试 18889…18897，并把换端口的事写进窗口。
 - **静态资源走 `assets` 注入**：`serveStatic()` 先查内存里的 `assets`（exe 内嵌），再查磁盘上的 `public/`、`desktop/`。所以同一份 `app.mjs` 在源码和 exe 里都能跑。
 - **打包版自带一个本机面板**（`/desktop` + `/api/admin/*`），因为它不跑在 DSH 里、没有 composer dock 可挂。`/api/admin/*` 和插件面板一样只认回环 `Host`。
 - **rcedit 必须在 postject 之前**：先注入 90 MB blob 再改 PE 资源，rcedit 会卡死（实测 `ETIMEDOUT`）。而且直接调 `rcedit-x64.exe`，不走 npm 包装层（那层在这台机器上会挂起）。
@@ -126,7 +126,7 @@
 
 ```powershell
 node verify/e2e.mjs                          # 23 项端到端（自己起临时端口的服务）
-node verify/exe-e2e.mjs                      # 18 项对 dist/PhoneDrop.exe 的端到端
+node verify/exe-e2e.mjs                      # 18 项对 dist/Byteferry.exe 的端到端
 node verify/device-info.mjs                  # 30 项设备信息（UA / 内网判定 / 清单字段 / 归属地）
 node verify/all.mjs; python verify/all.py    # 二维码 128 格逐格比对
 node verify/terminal-qr.mjs                  # 终端二维码画法回归
@@ -149,5 +149,5 @@ python verify/decode-panel-qr.py <svg>       # 面板二维码栅格化 + zxing 
 - 面板的长相是用 `verify/panel-harness/`（真 `client.js` + 真 react + 假数据）截图核对的，**没有在真 DSH 页面里点开过**（DSH 网页需要启动令牌才能登录）；真机扫码也没有实测。截图见 `verify/shots/`。
 - 归属地的线上表现没测：面板上那台"公网设备"是假数据（`203.0.113.42` 是文档专用地址）；离线脚本只验过 `1.1.1.1` 能查到「澳大利亞 · Queensland · South Brisbane」。
 - 设备名靠 UA：浏览器把 UA 改掉或隐私模式屏蔽 UA，就只能显示「未知设备」；这不影响权限和解除。
-- **安装包（Setup.exe）的安装过程没能在本机跑通**：Inno 的安装进程在这台机器上写 `Program Files` / `%LOCALAPPDATA%\Programs` / `HKCU\...\Uninstall` 一律 `错误 5`，连三行的最小脚本也一样——本机环境限制（DSH 的进程全提权，Inno 切到的受限令牌被拒），不是脚本问题。绿色包（`dist/PhoneDrop-1.0.1-portable.zip`）已实测可跑。
+- **安装包（Setup.exe）的安装过程没能在本机跑通**：Inno 的安装进程在这台机器上写 `Program Files` / `%LOCALAPPDATA%\Programs` / `HKCU\...\Uninstall` 一律 `错误 5`，连三行的最小脚本也一样——本机环境限制（DSH 的进程全提权，Inno 切到的受限令牌被拒），不是脚本问题。绿色包（`dist/Byteferry-1.0.1-portable.zip`）已实测可跑。
 - **APK 没在真手机装过**：产物、签名、manifest 都验了，相机预览与扫码这条链路需要真机确认一次。
