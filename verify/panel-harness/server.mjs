@@ -1,0 +1,151 @@
+/**
+ * 面板视觉验收用的小服务器（只在本机做 UI 截图时用，不参与产品运行）。
+ *
+ *   node verify/panel-harness/server.mjs [--port 18990]
+ *
+ * 做三件事：
+ *   1. 把 harness.html 和 react UMD 发给浏览器；
+ *   2. `/phone-drop/state` 返回一份写死的快照（running + 配对中 + 两台设备）；
+ *   3. `/phone-drop/qr.svg` 直接转发真实 Host 路由的二维码，保证是真码不是占位图。
+ */
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { qrSvg } from '../../lib/qr.mjs';
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const PORT = Number(process.argv[process.argv.indexOf('--port') + 1]) || 18990;
+
+const LAN = '192.168.1.20';
+const code = process.env.DROPSLUICE_DEMO_CODE || '123456';
+
+const now = Date.now();
+const MIN = 60 * 1000;
+const HOUR = 60 * MIN;
+
+/**
+ * 写死的两条设备记录，字段与真 `devicesDetailed()` 的返回一一对应：
+ * 一台局域网里的 iPhone（带 Wi-Fi 名），一台来自公网 IP 的旧平板（带城市名），
+ * 这样截图能覆盖"局域网 / 公网 + 设备型号 + 时间"两种排布。
+ */
+const state = {
+  ok: true,
+  running: true,
+  adopted: false,
+  port: 18888,
+  lan: LAN,
+  url: `http://${LAN}:18888/`,
+  pairing: {
+    open: true,
+    code,
+    expiresAt: now + 7 * MIN,
+    url: `http://${LAN}:18888/pair?c=${code}`,
+    hasQr: true,
+  },
+  devices: [
+    {
+      id: 'demo-lan',
+      name: '我的手机',
+      createdAt: now - 2 * HOUR,
+      lastSeenAt: now - 40 * 1000,
+      ip: '192.168.1.20',
+      iface: 'WLAN',
+      client: { kind: 'phone', model: 'iPhone', os: 'iOS 18.1', browser: 'Safari', label: 'iPhone · iOS 18.1 · Safari' },
+      network: { kind: 'lan', iface: 'WLAN', ssid: 'MyWiFi-5G' },
+      location: null,
+    },
+    {
+      id: 'demo-wan',
+      name: '旧 iPad',
+      createdAt: now - 26 * HOUR,
+      lastSeenAt: now - 3 * HOUR,
+      ip: '203.0.113.42',
+      iface: 'WLAN',
+      client: { kind: 'tablet', model: 'iPad', os: 'iPadOS 16.6', browser: 'Safari', label: 'iPad · iPadOS 16.6 · Safari' },
+      network: { kind: 'public', iface: 'WLAN', ssid: null },
+      location: { place: '中国 · 上海', isp: 'China Telecom', source: 'ip-api.com', at: now },
+    },
+  ],
+  firewallCommand: 'New-NetFirewallRule -DisplayName "DropSluice"',
+  // 面板截图的「不在同一个 Wi-Fi」那张卡：用演示地址，别把真实尾网 IP 拍进图里
+  tailnet: {
+    up: true,
+    ip: '100.101.102.103',
+    dnsName: 'demo-pc.tailnet-example.ts.net',
+    url: `http://100.101.102.103:18888/`,
+    pairUrl: `http://100.101.102.103:18888/pair?c=${code}`,
+  },
+};
+
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.svg': 'image/svg+xml',
+};
+
+createServer(async (req, res) => {
+  const url = new URL(req.url, `http://127.0.0.1:${PORT}`);
+  try {
+    if (url.pathname === '/phone-drop/state') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify(state));
+    }
+    if (url.pathname === '/phone-drop/qr.svg') {
+      // 给浮层截图用：直接画一张指向演示地址的码，避免把真实局域网 IP 编进图里。
+      res.writeHead(200, { 'content-type': 'image/svg+xml', 'cache-control': 'no-store' });
+      return res.end(qrSvg(state.pairing.url, { size: 320, margin: 2 }));
+    }
+    // 打包版面板（/desktop）的截图：用同一份 desktop.html，接口换成本文件里的假数据，
+    // 这样截图里不会出现真实的局域网 IP 和私人设备名。
+    if (url.pathname === '/desktop') {
+      const html = await readFile(path.resolve(HERE, '..', '..', 'desktop', 'desktop.html'));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(html);
+    }
+    if (url.pathname === '/api/admin/state') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify({ ...state, addresses: [{ address: LAN, iface: 'WLAN', virtual: false }] }));
+    }
+    // 截图用：假装手机正在下一个大文件
+    if (url.pathname === '/api/admin/transfers') {
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+      return res.end(JSON.stringify({
+        transfers: [{
+          id: 1,
+          kind: 'download',
+          name: '产品演示.mp4',
+          total: 148_635_648,
+          bytes: 101_187_584,
+          speed: 3_563_000,
+          ip: '192.168.1.20',
+          startedAt: Date.now() - 38_000,
+          endedAt: 0,
+          done: false,
+          failed: false,
+        }],
+      }));
+    }
+    if (url.pathname === '/qr.svg') {
+      const remote = url.searchParams.get('target') === 'remote';
+      const target = remote ? state.tailnet.pairUrl : state.pairing.url;
+      res.writeHead(200, { 'content-type': 'image/svg+xml', 'cache-control': 'no-store' });
+      return res.end(qrSvg(target, { size: 320, margin: 2 }));
+    }
+    const rel = url.pathname === '/' ? 'harness.html' : url.pathname.slice(1);
+    const isClient = rel === 'client.js';
+    const file = isClient ? path.join(HERE, '..', '..', 'client.js') : path.join(HERE, rel);
+    if (!isClient && !file.startsWith(HERE)) {
+      res.writeHead(403).end('forbidden');
+      return;
+    }
+    const data = await readFile(file);
+    res.writeHead(200, { 'content-type': TYPES[path.extname(file)] ?? 'application/octet-stream' });
+    res.end(data);
+  } catch (err) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end(String(err?.message ?? err));
+  }
+}).listen(PORT, '127.0.0.1', () => {
+  console.log(`panel harness: http://127.0.0.1:${PORT}/`);
+});

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>DropSluice · 电脑文件</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="bar">
+  <button id="home" class="icon" title="回到盘符" aria-label="回到盘符">🏠</button>
+  <div id="crumbs" class="crumbs"></div>
+  <button id="refresh" class="icon" title="刷新">⟳</button>
+</header>
+
+<main>
+  <div id="roots" class="roots hidden"></div>
+  <div id="filterWrap" class="filter hidden">
+    <input id="filter" type="search" placeholder="在当前文件夹里筛选…" autocomplete="off">
+  </div>
+  <ul id="list" class="list"></ul>
+  <div id="empty" class="empty hidden"></div>
+  <div id="status" class="status hidden"></div>
+</main>
+
+<footer class="bar bottom">
+  <button id="zipBtn" class="ghost">打包下载本文件夹</button>
+  <label class="ghost" for="uploadInput">传文件上来</label>
+  <input id="uploadInput" type="file" multiple hidden>
+  <button id="unpair" class="ghost danger">解除配对</button>
+</footer>
+
+<div id="xfer" class="xfer hidden"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="DropSluice">
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="#1f6feb" opacity="0.14"/>
+  <rect x="22" y="10" width="20" height="34" rx="4" fill="none" stroke="#1f6feb" stroke-width="3"/>
+  <line x1="30" y1="16" x2="34" y2="16" stroke="#1f6feb" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M32 30 V48 M32 48 l-6 -6 M32 48 l6 -6" fill="none" stroke="#1f6feb" stroke-width="3"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="20" y="50" width="24" height="4" rx="2" fill="#1f6feb" opacity="0.55"/>
+</svg>

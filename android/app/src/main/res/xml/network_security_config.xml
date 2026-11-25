@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  手机→电脑是明文 http（局域网工具，没上 TLS）。
+  Android 9 起默认禁止明文，这里明确放开；只影响这个 App，不影响系统其它应用。
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

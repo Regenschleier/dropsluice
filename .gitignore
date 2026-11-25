@@ -1,0 +1,39 @@
+# 运行时会生成的状态（里面是设备令牌的哈希、配对窗口、归属地缓存）
+.data/
+.data-*/
+qr-all.json
+
+# 自测产物
+verify/qr-all.json
+verify/_panel-qr.svg
+verify/_panel-qr.png
+verify/_*.log
+verify/_*.err
+verify/shots/_scratch/
+
+# 视觉验收脚手架依赖 / 假服务器的临时日志
+verify/panel-harness/node_modules/
+verify/phone-harness/*.log
+
+# 视觉验收脚手架依赖
+verify/panel-harness/node_modules/
+
+# 构建期下载/产物（Android SDK、Gradle、keystore、日志、exe、安装包、APK）
+build/
+dist/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/keystore.properties
+*.jks
+*.keystore
+*.apk
+
+# 本机交接笔记（只给自己看，不进仓库）
+HANDOFF.md
+
+# 编辑器/系统
+node_modules/
+.DS_Store
+Thumbs.db

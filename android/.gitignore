@@ -1,0 +1,13 @@
+# Gradle / Android 构建产物
+.gradle/
+build/
+local.properties
+captures/
+*.iml
+.idea/
+
+# 签名（绝对不能进仓库）
+keystore.properties
+*.jks
+*.keystore
+app/release/

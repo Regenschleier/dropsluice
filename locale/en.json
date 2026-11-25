@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "title": "DropSluice",
+    "description": "Send files from this computer to your phone over the local network, byte for byte, paired by QR code."
+  },
+  "panel": {
+    "open": "Send to phone",
+    "start": "Start",
+    "stop": "Stop",
+    "pair": "New pairing code",
+    "devices": "Paired devices",
+    "revoke": "Revoke",
+    "scan": "Scan this with your phone camera",
+    "copy": "Copy link",
+    "copied": "Copied",
+    "running": "Running",
+    "stopped": "Stopped",
+    "adopted": "Already running",
+    "code": "Pairing code",
+    "expires": "Expires",
+    "noDevices": "No phone paired yet",
+    "firewall": "Allow it through the firewall"
+  }
+}

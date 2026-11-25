@@ -1,0 +1,37 @@
+{
+  "name": "@local/phone-drop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "DropSluice: send files from this computer to your phone over the LAN, byte-for-byte, with QR pairing.",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "lib/**/*.mjs",
+    "public/**",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "server.mjs"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  }
+}
