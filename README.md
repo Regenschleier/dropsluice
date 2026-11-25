@@ -205,7 +205,7 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 - **没有加密传输**：局域网内是 http。同一 Wi-Fi 下懂行的人可以用 ARP 欺骗之类的手段看流量。家里/自己热点没问题，公共 Wi-Fi 别开。
 - **不暴露到公网**：这个服务没有做反向代理/端口映射的安全加固，别直接映射到公网。真要从外网用，套一层 VPN（WireGuard/Tailscale 之类）比暴露端口安全得多。
 - **它能读整块磁盘**：这是设计目标（你要的就是"随意调用电脑文件"），但也意味着**拿到令牌的那台手机能读你所有盘**。别把二维码给别人扫，别把令牌抄给别的设备。
-- **上传有上限**：单次上传默认最多 4 GiB（`DROPSLUICE_MAX_UPLOAD_MB=2048` 可改），超了直接 413 并且**不留半截文件**——不会因为一个超大请求把磁盘写满。JSON 请求体上限 1 MiB。
+- **上传有上限**：单次上传默认最多 **32 GiB**（`DROPSLUICE_MAX_UPLOAD_MB=2048` 可改小，也可以调大），超了直接 413 并且**不留半截文件**——不会因为一个超大请求把磁盘写满。JSON 请求体上限 1 MiB。
 - **成品里没有本机痕迹**：`verify/security.mjs --dist` 会扫 exe 和 apk 的二进制，确认里面没有本机用户名、目录、真实内网 IP 或 token。
 
 ---
@@ -213,10 +213,11 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 ## 5. 自测怎么跑（想确认「真的没压缩」）
 
 ```bash
-node verify/e2e.mjs          # 端到端 30 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、超限 413、解除
+node verify/e2e.mjs          # 端到端 34 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、超限 413、传输进度、解除
 node verify/device-info.mjs  # 设备信息 30 项：UA 解析、内网判定、IP/网卡/Wi-Fi/型号、归属地
 node verify/terminal-qr.mjs  # 终端二维码 5 项（矩阵 → 半块字符 → 反推矩阵逐格一致）
-node verify/exe-e2e.mjs      # 打包版 exe 18 项（需要先构建，见 §6.1）
+node verify/exe-e2e.mjs      # 打包版 exe 20 项（需要先构建，见 §6.1）
+node verify/zip64.mjs        # zip 结构 11 项；加 --big 会真造一个 4.3 GiB 稀疏文件打一遍（+4 项，约 15 秒）
 node verify/security.mjs     # 安全自检 10 项：本机痕迹/口令/私钥、受控文件清单、安全实现
 node verify/security.mjs --dist   # 再加 2 项：扫 dist/ 里的 exe 和 apk 有没有内嵌本机路径
 ```

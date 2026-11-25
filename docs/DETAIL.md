@@ -109,7 +109,8 @@
 
 ## 实现上几个不显然的点
 
-- **zip 为什么是 store 模式**：用户要的是"原样传输"。用 deflate 压一遍再解开，字节也一致，但会多耗 CPU、让下载变慢、而且"压缩过"这件事本身就让人怀疑有没有动过内容。store 模式每个文件就是原封不动的字节，跳过 >4 GB 的文件（没实现 zip64）。
+- **zip 为什么是 store 模式**：用户要的是"原样传输"。用 deflate 压一遍再解开，字节也一致，但会多耗 CPU、让下载变慢、而且"压缩过"这件事本身就让人怀疑有没有动过内容。store 模式每个文件就是原封不动的字节。
+- **zip64 只在需要时才用**：单个文件 ≥ 4 GiB、整包 ≥ 4 GiB、或某条目的偏移 ≥ 4 GiB 时，32 位字段装不下，就切到 zip64——本地头版本号写 45、尺寸写 `0xFFFFFFFF` 并把真值放进 `0x0001` 额外字段（8 字节），data descriptor 从 16 字节变 24 字节，结尾再补 zip64 EOCD + locator，普通 EOCD 用 `0xFFFF`/`0xFFFFFFFF` 作哨兵。小包仍然产出普通 zip，老工具照解。判定逻辑全在 `lib/zip.mjs`，`verify/zip64.mjs --big` 会真造一个 4.3 GiB 稀疏文件打一遍来验。
 - **local header 的 flag 用 `0x0808`**：bit3 = 后面有 data descriptor（因为流式发送时还不知道 CRC 和大小），bit11 = 文件名是 UTF-8（中文名必须开，否则 Windows 解压会乱码）。
 - **`Cache-Control: no-store, no-transform`**：防止中间层（尤其是浏览器扩展、代理）改写响应体。
 - **列目录跳过隐藏项和 `System Volume Information`/`$RECYCLE.BIN`**：回收站和系统卷信息里有权限拒绝，逐个 stat 会让整页卡住。
@@ -161,8 +162,8 @@ python verify/decode-panel-qr.py <svg>       # 面板二维码栅格化 + zxing 
 
 ## 限制（先说清楚）
 
-- 只做局域网，没有 TLS、没有公网穿透。外网要用自己套 VPN。
-- 没有 zip64：单文件 > 4 GB 打包时会被跳过（直接下载单个文件不受影响）。
+- 只做局域网，没有 TLS、没有公网穿透。外网要用自己套 VPN 或 Tailscale（见 `docs/remote-tailscale.md`）。
+- 大文件：单个文件下载没有上限；上传默认 32 GiB（`DROPSLUICE_MAX_UPLOAD_MB` 可调）；打包下载支持 zip64，单个文件与整包都能超过 4 GiB。
 - 目录列表最多 3000 条，超出会标 `truncated`，靠手机页面上的筛选框缩小范围。
 - 面板的长相是用 `verify/panel-harness/`（真 `client.js` + 真 react + 假数据）截图核对的，**没有在真 DSH 页面里点开过**（DSH 网页需要启动令牌才能登录）；真机扫码也没有实测。截图见 `verify/shots/`。
 - 归属地的线上表现没测：面板上那台"公网设备"是假数据（`203.0.113.42` 是文档专用地址）；离线脚本只验过 `1.1.1.1` 能查到「澳大利亞 · Queensland · South Brisbane」。
