@@ -408,6 +408,26 @@ if (!lanIp) {
       assert(/vnd\.android\.package-archive/.test(r.headers.get('content-type') || ''), `Content-Type 不对：${r.headers.get('content-type')}`);
       return `${r.headers.get('content-length')} B`;
     });
+    // 引导页上的「下载安装包」按钮是从手机浏览器里点的：/apk 必须对它开放，否则按钮是死的
+    await check('手机浏览器也能下 /apk（引导页按钮不是死的）', async () => {
+      const head = await fetch(`${gbase}/apk`, { method: 'HEAD', headers: { 'user-agent': phoneUA } });
+      assert(head.status === 200, `HEAD 期望 200，实际 ${head.status}`);
+      const got = await fetch(`${gbase}/apk`, { headers: { 'user-agent': phoneUA } });
+      assert(got.status === 200, `GET 期望 200，实际 ${got.status}`);
+      const headLen = Number(head.headers.get('content-length'));
+      const body = Buffer.from(await got.arrayBuffer());
+      assert(body.length === headLen, `字节数不一致：HEAD ${headLen} / GET ${body.length}`);
+      assert(body[0] === 0x50 && body[1] === 0x4b, '下载到的不是 zip 头（PK）');
+      return `${body.length} B`;
+    });
+    // 引导页自己引用 /style.css；这张表被拦的话 403 页面就是裸的（曾经真的裸过）
+    await check('手机浏览器能取 /style.css（引导页有样式）', async () => {
+      const r = await fetch(`${gbase}/style.css`, { headers: { 'user-agent': phoneUA } });
+      assert(r.status === 200, `期望 200，实际 ${r.status}`);
+      const text = await r.text();
+      assert(text.includes('--accent'), '样式表内容不对');
+      return `${text.length} 字符`;
+    });
   } catch (err) {
     bad('网关集成测试', `连不上本机局域网地址 ${gbase}：${err.message}`);
   } finally {
