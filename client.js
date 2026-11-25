@@ -297,9 +297,11 @@ window.__ModuleLoader__.load({
           ),
         );
 
-        // 手机不在同一个 Wi-Fi（开着流量）时：Tailscale 这条也能扫
+        // 手机不在同一个 Wi-Fi（开着流量 / 借别人家网）时：Tailscale 或公网地址这两条也能扫
         const ts = snap?.tailnet;
-        if (ts?.up && ts.url) {
+        const tun = snap?.tunnel;
+        const remoteUrl = ts?.up && ts.url ? `${ts.url}（Tailscale）` : tun?.running && tun.url ? `${tun.url}（公网临时地址）` : null;
+        if (remoteUrl) {
           rows.push(
             h(
               'div',
@@ -307,7 +309,7 @@ window.__ModuleLoader__.load({
               h(
                 'code',
                 {
-                  title: ts.dnsName ? `MagicDNS：${ts.dnsName}` : undefined,
+                  title: ts?.dnsName ? `MagicDNS：${ts.dnsName}` : undefined,
                   style: {
                     flex: 1,
                     fontSize: 12,
@@ -321,14 +323,14 @@ window.__ModuleLoader__.load({
                     whiteSpace: 'nowrap',
                   },
                 },
-                `${ts.url}（手机用流量时用这条）`,
+                remoteUrl,
               ),
               h(
                 Btn,
                 {
                   onClick: async () => {
                     try {
-                      await navigator.clipboard.writeText(ts.url);
+                      await navigator.clipboard.writeText(ts?.up && ts.url ? ts.url : tun.url);
                     } catch {
                       /* 复制不了就算了，地址本身能看 */
                     }

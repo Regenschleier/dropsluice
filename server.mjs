@@ -84,6 +84,18 @@ if (ts?.up) {
   console.log('');
 }
 
+// 第 3 条路：不装任何东西，借 Cloudflare 开一个临时公网地址（面板上点一下）
+const tn = info.tunnel || {};
+if (tn.supported) {
+  if (tn.running && tn.url) {
+    console.log(`  公网地址（临时，重启会变）：${tn.url}`);
+    if (tn.pairUrl) console.log(`    一键配对链接：${tn.pairUrl}`);
+  } else {
+    console.log('  借别人 Wi-Fi / 公司网也能连：桌面面板上点「开公网地址」');
+  }
+  console.log('');
+}
+
 console.log('  提示：手机连不上多半是 Windows 防火墙拦了。');
 console.log('        管理员 PowerShell 里跑（把端口换成你的）：');
 console.log(`        New-NetFirewallRule -DisplayName "DropSluice" -Direction Inbound -Protocol TCP -LocalPort ${port} -Action Allow -Profile Private`);

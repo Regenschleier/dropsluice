@@ -178,6 +178,17 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 
 > **完整步骤、每一步在干什么、连不上怎么查**：单独写在 **[docs/remote-tailscale.md](docs/remote-tailscale.md)**（含实测到哪一步、哪些还没验过）。这一节只是速览。
 
+## 2.7 连 Tailscale 都不想装？点一下「开公网地址」
+
+面板上还有一张卡片：**开公网地址**。点它，程序自己用 Cloudflare 快速隧道（`cloudflared`）把服务挂到一个临时 `https://xxx.trycloudflare.com` 上，手机上用流量直接扫那张码就能连。不用注册、不用装 Tailscale。
+
+- **随服务启停**：隧道是服务起的子进程，点「关掉公网地址」或者停掉服务，它跟着退出，不会留孤儿进程。
+- **域名每次会变**：`trycloudflare.com` 的临时域名是每次开隧道随机分的，关掉或重启电脑就换一个——所以手机不要存这个地址，每次扫新的码。
+- **想固定域名**：要么用 Cloudflare 具名隧道（要自己的域名 + 账号，设 `DROPSLUICE_TUNNEL_TOKEN`），要么就用 Tailscale。
+- **前提**：机器上得有 `cloudflared`（`winget install --id Cloudflare.cloudflared`，或从 Cloudflare 官网下 exe 放进 PATH）；也可以 `DROPSLUICE_CLOUDFLARED` 指到它的绝对路径。没有的话这张卡片会显示「没装 cloudflared」。
+- **安全口径没变**：公网只看得到配对页和「请用 App 打开」那页；面板 `/desktop`、`/api/admin/*` 在公网一律 403。配对码 + Cookie 仍旧是进门钥匙。
+- **想一启动就有公网地址**：`DROPSLUICE_TUNNEL=auto`（没有 cloudflared 时静默跳过）。
+
 ---
 
 ## 3. 手机打不开？按这个顺序查
@@ -217,7 +228,7 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 ## 5. 自测怎么跑（想确认「真的没压缩」）
 
 ```bash
-node verify/e2e.mjs          # 端到端 37 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、分块续传、超限 413、传输进度、解除
+node verify/e2e.mjs          # 端到端 40 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、分块续传、超限 413、传输进度、解除
 node verify/device-info.mjs  # 设备信息 30 项：UA 解析、内网判定、IP/网卡/Wi-Fi/型号、归属地
 node verify/terminal-qr.mjs  # 终端二维码 5 项（矩阵 → 半块字符 → 反推矩阵逐格一致）
 node verify/exe-e2e.mjs      # 打包版 exe 20 项（需要先构建，见 §6.1）
@@ -356,7 +367,7 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 **已验证（都有脚本或命令可复跑）：**
 
 - 二维码编码器：16 段测试串 × 8 种掩码 = **128 个矩阵与 python-qrcode 逐格完全一致**；zxing 能把每种掩码都解码回原文；终端半块字符版 5 项回归全过。
-- 服务端 e2e **37 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401、**Tailscale 的 `100.64/10` 判定 9 个边界值 + 状态里有 `tailnet` 段**、**传输登记表能算速率并标记完成 / 下载进行中 `/api/transfers` 有 `download` 条目**、**分块上传：断在中间能续上并拼回原文件 / 没传完 done 被 409 挡下 / 声明超上限 413**。
+- 服务端 e2e **40 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401、**Tailscale 的 `100.64/10` 判定 9 个边界值 + 状态里有 `tailnet` 段**、**传输登记表能算速率并标记完成 / 下载进行中 `/api/transfers` 有 `download` 条目**、**公网地址：没装 cloudflared 时 503 不崩、没开时 /qr.svg?target=tunnel 404 带原因**、**分块上传：断在中间能续上并拼回原文件 / 没传完 done 被 409 挡下 / 声明超上限 413**。
 - 设备信息 **30 项**：UA→「iPhone · iOS 18.1 · Safari」、公网/内网判定（`172.16` 内网但 `172.32` 公网）、IP/网卡/Wi-Fi 名落库、`1.1.1.1` 真查到「澳大利亞 · Queensland · South Brisbane · Cloudflare」且第二次走缓存。
 - 打包版 exe **18 项**：面板 200、二维码 SVG、配对、下载 SHA256、**伪造 Host → 403 / 本机 Host → 200**（只允许本机）、解除后 401。
 - 安全自检 **12 项**（`verify/security.mjs --dist`）：受控文件里没有本机绝对路径/用户名/真实内网 IP/token/私钥/明文口令；受控清单里没有 `dist/`、`.data/`、`*.jks`、`*.apk/.exe/.zip`、token 缓存；HttpOnly/SameSite/上传上限/413/配对限速/JSON 上限/`no-store, no-transform`/本机 Host 校验都在；**成品 exe 与 apk 的二进制里没有 `C:\Users\<你>`、`10.17.`、`github_pat_`**。
