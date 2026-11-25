@@ -134,8 +134,8 @@ function banner({ port, lan, code, pairUrl, expiresAt, existing }) {
   console.log('  手机和电脑连同一个 Wi-Fi，然后：');
   console.log('');
   if (lan) {
-    console.log(`    1) 用手机扫下面的二维码，或在手机浏览器里打开：`);
-    console.log(`         http://${lan}:${port}/`);
+    console.log(`    1) 打开手机上的 DropSluice App，用它扫下面的二维码：`);
+    console.log(`         （网页版不开放给手机浏览器；App 装在哪、怎么装见下面的提示）`);
     if (pairUrl) console.log(`       一键配对链接（含配对码）： ${pairUrl}`);
     console.log(`    2) 配对码： ${code}`);
     if (expiresAt) console.log(`       有效期到 ${new Date(expiresAt).toLocaleTimeString('zh-CN')}`);

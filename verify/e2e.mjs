@@ -13,6 +13,8 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 
+import { isMobileBrowser } from '../lib/app.mjs';
+
 let pass = 0;
 let fail = 0;
 const failures = [];
@@ -359,7 +361,61 @@ await check('超过上限的上传被 413 挡下，且不留半截文件', async
   return `limit=${d.limit}`;
 });
 
-// ---------- 7. 解除配对 ----------
+// ---------- 7. 手机端只认 App ----------
+console.log('7) 手机端只认 App（浏览器被挡在网页端外）');
+await check('isMobileBrowser 判定（浏览器拦、App 不拦、桌面不拦）', async () => {
+  const phone = 'Mozilla/5.0 (Linux; Android 14; V2465A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Mobile Safari/537.36';
+  assert(isMobileBrowser(phone) === true, '安卓浏览器应被判为手机浏览器');
+  assert(isMobileBrowser(`${phone} DropSluice/1.0.1`) === false, 'App 的 UA 不该被拦');
+  assert(isMobileBrowser('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36') === false, '桌面浏览器不该被拦');
+  assert(isMobileBrowser(null) === false, '没有 UA 不该被拦');
+  return '4 种 UA 判定正确';
+});
+
+// 网关只在"非回环"生效，所以要另起一台监听 0.0.0.0 的实例、从局域网地址回连一次
+const lanIp = Object.values(os.networkInterfaces()).flat().find((i) => i && i.family === 'IPv4' && !i.internal)?.address;
+if (!lanIp) {
+  ok('网关集成测试', '跳过：这台机器没有局域网地址');
+} else {
+  const { startDropSluice } = await import('../lib/app.mjs');
+  let gated = null;
+  for (let attempt = 0; attempt < 12 && !gated; attempt++) {
+    const port = 19200 + Math.floor(Math.random() * 700);
+    try {
+      gated = await startDropSluice({ port, host: '0.0.0.0', openPairing: true });
+    } catch (err) {
+      if (err?.code !== 'EADDRINUSE') throw err;
+    }
+  }
+  const gbase = `http://${lanIp}:${gated.port}`;
+  const phoneUA = 'Mozilla/5.0 (Linux; Android 14; V2465A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Mobile Safari/537.36';
+  try {
+    await check('手机浏览器 GET / → 403 + 引导页', async () => {
+      const r = await fetch(`${gbase}/`, { headers: { 'user-agent': phoneUA }, redirect: 'manual' });
+      assert(r.status === 403, `期望 403，实际 ${r.status}`);
+      const text = await r.text();
+      assert(text.includes('请用 DropSluice App'), '引导页文案不对');
+      return '403';
+    });
+    await check('App 的 UA 不被拦（未配对 → 302 去 /pair）', async () => {
+      const r = await fetch(`${gbase}/`, { headers: { 'user-agent': `${phoneUA} DropSluice/1.0.1` }, redirect: 'manual' });
+      assert(r.status === 302, `期望 302，实际 ${r.status}`);
+      return '302';
+    });
+    await check('HEAD /apk 给出安装包', async () => {
+      const r = await fetch(`${gbase}/apk`, { method: 'HEAD' });
+      assert(r.status === 200, `期望 200，实际 ${r.status}`);
+      assert(/vnd\.android\.package-archive/.test(r.headers.get('content-type') || ''), `Content-Type 不对：${r.headers.get('content-type')}`);
+      return `${r.headers.get('content-length')} B`;
+    });
+  } catch (err) {
+    bad('网关集成测试', `连不上本机局域网地址 ${gbase}：${err.message}`);
+  } finally {
+    await gated.close();
+  }
+}
+
+// ---------- 8. 解除配对 ----------
 console.log('7) 解除配对');
 await check('unpair 后令牌失效', async () => {
   const r1 = await req('/api/unpair', { method: 'POST' });

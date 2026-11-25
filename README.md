@@ -1,18 +1,18 @@
 # DropSluice · 手机取件
 
-## ⬇️ 直接下载（v1.0.1）
+## ⬇️ 直接下载（v1.0.2）
 
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
 | 在电脑上跑（单文件，双击即用） | **[DropSluice.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice.exe)** | ~90 MB |
-| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.1.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.1.apk)** | ~3.3 MB |
-| 想要安装向导 | [DropSluice-Setup-1.0.1.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.1.exe) | ~24 MB |
-| 不想安装、解压就用 | [DropSluice-1.0.1-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.1-portable.zip) | ~33 MB |
+| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.2.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.2.apk)** | ~3.3 MB |
+| 想要安装向导 | [DropSluice-Setup-1.0.2.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.2.exe) | ~24 MB |
+| 不想安装、解压就用 | [DropSluice-1.0.2-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.2-portable.zip) | ~33 MB |
 | 核对下载是否完整 | [SHA256SUMS.txt](https://github.com/Regenschleier/dropsluice/releases/latest/download/SHA256SUMS.txt) | 1 KB |
 
 > 都在同一个 Release 里：[全部产物](https://github.com/Regenschleier/dropsluice/releases/latest)。
 > 仓库是私有的，链接对**已登录且被授权的账号**有效。
-> 当前 SHA256：exe `77A5162D…415C`、apk `7554D823…1A8`、setup `526B837D…7082`、zip `A6FACD32…341E`（完整值见 `SHA256SUMS.txt`）。
+> 当前 SHA256：exe `28E2C144…ED60`、apk `2D58880B…45E4`、setup `B58E36AE…AB32`、zip `F4FBC7B2…4526`（完整值见 `SHA256SUMS.txt`）。
 
 ---
 
@@ -26,7 +26,7 @@
 电脑那一端有两种用法：装成 DeepSeek Harness 的插件（网页输入框上方出现「📱 传到手机」按钮），或者直接跑一个命令行服务 / 一个 exe。三种形态是同一份代码。
 
 - 运行**零第三方依赖**：只用 Node 内置模块（连 zip 和二维码都是自己写的）
-- 手机端**不用装 App**：浏览器打开就是页面（想更像 App 的话，仓库里也有 APK 源码）
+- 手机端**只认 App**：不提供网页版。拿手机浏览器打开服务地址，会看到一页「请用 DropSluice App 打开」的引导（附安装包下载按钮）；浏览、下载、上传都在 App 里做，网页只在电脑上负责配对
 - 网络只走**同一个局域网**：服务监听 `0.0.0.0:18888`，但配对这一步只在电脑本机能开，手机必须拿着 6 位码换令牌
 
 ---
@@ -97,12 +97,14 @@ node server.mjs --pair          # 服务已经在跑时，再要一个新配对�
 ## 2. 手机那边怎么操作
 
 1. 手机连**同一个 Wi-Fi**（和电脑同一个路由器；电脑插网线也行，只要在同一个网段）。
-2. 打开手机相机/微信扫一扫，扫电脑上的二维码。或者手动打开 `http://<电脑的局域网IP>:18888/`。
-3. 第一次会让你输 6 位配对码（网页会自动带上，一般直接按「配对」）。
-4. 之后随便逛：点盘符 → 进文件夹 → 点文件就下载（走浏览器/系统的下载，原样保存）。
+2. 手机装 **DropSluice App**（Release 里的 `.apk`，或者页面上那个下载按钮）；打开 App 点「扫码」，扫电脑上的二维码。
+3. App 扫到码会自己带上配对码，一般直接按「配对」；第一次之外不用再扫码。
+4. 之后随便逛：点盘符 → 进文件夹 → 点文件就下载（走 App 的下载器，原样保存）。
 5. 底栏三个按钮：「打包下载本文件夹」（当前目录打成一个 zip）、「传文件上来」（把手机里的文件传回当前目录）、「解除配对」。
 
-配对令牌存在手机浏览器的 Cookie 里（`pd_session`，HttpOnly、SameSite=Lax、一年有效）。换手机/换浏览器要重新扫一次码。
+> 手机浏览器是**打不开**的：同一串地址用浏览器开，只会收到一页「请用 DropSluice App 打开」。这是故意的——手机上只留一条入口，省得两套界面各修一遍。
+
+配对令牌存在 App 的 Cookie 里（`pd_session`，HttpOnly、SameSite=Lax、一年有效）。换手机、或者清了 App 数据，要重新扫一次码。
 
 ---
 
@@ -166,7 +168,7 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 ## 5. 自测怎么跑（想确认「真的没压缩」）
 
 ```bash
-node verify/e2e.mjs          # 端到端 24 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、超限 413、解除
+node verify/e2e.mjs          # 端到端 28 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、超限 413、解除
 node verify/device-info.mjs  # 设备信息 30 项：UA 解析、内网判定、IP/网卡/Wi-Fi/型号、归属地
 node verify/terminal-qr.mjs  # 终端二维码 5 项（矩阵 → 半块字符 → 反推矩阵逐格一致）
 node verify/exe-e2e.mjs      # 打包版 exe 18 项（需要先构建，见 §6.1）
@@ -192,9 +194,9 @@ python verify/decode-panel-qr.py               # 把面板上的二维码 SVG �
 
 | 产物 | 大小 | 怎么用 | 适合谁 |
 | --- | --- | --- | --- |
-| `dist/DropSluice-1.0.1-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
+| `dist/DropSluice-1.0.2-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
 | `dist/DropSluice.exe` | ~90 MB | 直接双击（单文件，自带 Node） | 自己放个地方跑 |
-| `dist/DropSluice-Setup-1.0.1.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
+| `dist/DropSluice-Setup-1.0.2.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
 
 exe 是**单文件**：Node 官方 SEA（Single Executable Application）把 `outfile + node.exe` 缝在一起，`public/`、`desktop/` 里的 6 个文件作为 assets 内嵌，双击即用，目标机器**不需要装 Node**。
 
@@ -232,7 +234,7 @@ winget install --id JRSoftware.InnoSetup --accept-source-agreements --accept-pac
 # ② 抓简体中文语言包到 build\tools\ChineseSimplified.isl（Inno 自带 Languages\ 里没有中文）
 node scripts/fetch-inno-chinese.mjs
 
-# ③ 编译：产物是 dist\DropSluice-Setup-1.0.1.exe
+# ③ 编译：产物是 dist\DropSluice-Setup-1.0.2.exe
 "C:\Users\<你>\AppData\Local\Programs\Inno Setup 6\ISCC.exe" installer\dropsluice.iss
 ```
 
@@ -303,7 +305,7 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 **已验证（都有脚本或命令可复跑）：**
 
 - 二维码编码器：16 段测试串 × 8 种掩码 = **128 个矩阵与 python-qrcode 逐格完全一致**；zxing 能把每种掩码都解码回原文；终端半块字符版 5 项回归全过。
-- 服务端 e2e **24 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、解除后旧令牌 401。
+- 服务端 e2e **28 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401。
 - 设备信息 **30 项**：UA→「iPhone · iOS 18.1 · Safari」、公网/内网判定（`172.16` 内网但 `172.32` 公网）、IP/网卡/Wi-Fi 名落库、`1.1.1.1` 真查到「澳大利亞 · Queensland · South Brisbane · Cloudflare」且第二次走缓存。
 - 打包版 exe **18 项**：面板 200、二维码 SVG、配对、下载 SHA256、**伪造 Host → 403 / 本机 Host → 200**（只允许本机）、解除后 401。
 - 安全自检 **12 项**（`verify/security.mjs --dist`）：受控文件里没有本机绝对路径/用户名/真实内网 IP/token/私钥/明文口令；受控清单里没有 `dist/`、`.data/`、`*.jks`、`*.apk/.exe/.zip`、token 缓存；HttpOnly/SameSite/上传上限/413/配对限速/JSON 上限/`no-store, no-transform`/本机 Host 校验都在；**成品 exe 与 apk 的二进制里没有 `C:\Users\<你>`、`10.17.`、`github_pat_`**。
@@ -313,9 +315,9 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 
 **未验证（不做任何保证）：**
 
-- **安装包（`DropSluice-Setup-1.0.1.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
+- **安装包（`DropSluice-Setup-1.0.2.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
 - **APK 没在真手机上装过**：只验证了产物、签名、manifest，没有真的装到手机、没有用手机相机扫过电脑屏幕。相机预览、CameraX 在这个机型上的表现、`DownloadManager` 的保存路径，都还要一次真机确认。
-- **真机扫码（网页版）**：写这份文档的机器上没有可用的手机取件环境，所有"手机端"结论来自 HTTP 层自测（同一套 API、同一套 cookie 逻辑），没有经过真手机浏览器。
+- **真机扫码（App）**：写这份文档的机器上没有可用的手机取件环境，所有"手机端"结论来自 HTTP 层自测（同一套 API、同一套 cookie 逻辑），没有经过真手机。手机浏览器被网关挡掉这件事有自测覆盖（403 引导页 / App 的 UA 放行 / `/apk` 可下载）。
 - **面板在真 DSH 窗口里的渲染**：DSH 网页有启动令牌，非本人浏览器打不开，所以面板长相是用 `verify/panel-harness/`（真实 `client.js` + 真 react + 假数据）截图核对的，**没有在真 DSH 页面里点开过**。打包版自己的面板（`/desktop`）是同一个 HTML，截图用的是 `verify/phone-harness/` 的假数据（见 §0 的说明）。
 - **公网 IP 归属地的线上表现**：离线脚本里查过 `1.1.1.1`，面板截图里那台"公网设备"是假数据（`203.0.113.42` 是文档专用地址），没有真的从外网连进来过。
 - **双击闪退的根因只在一台机器上复现过**：`%LOCALAPPDATA%\DropSluice` 被拒、端口被占这两种情况都实测到并修好了；如果还有别的原因（比如杀毒软件拦 SEA exe）仍可能闪退——所以加了"任何退出路径都等一次回车"，让错误有机会留在屏幕上。

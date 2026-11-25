@@ -125,7 +125,7 @@
 ## 自测
 
 ```powershell
-node verify/e2e.mjs                          # 24 项端到端（自己起临时端口的服务）
+node verify/e2e.mjs                          # 28 项端到端（自己起临时端口的服务）
 node verify/exe-e2e.mjs                      # 18 项对 dist/DropSluice.exe 的端到端
 node verify/security.mjs --dist               # 12 项安全自检（本机痕迹 / 受控清单 / 成品二进制）
 node verify/device-info.mjs                  # 30 项设备信息（UA / 内网判定 / 清单字段 / 归属地）
@@ -150,5 +150,5 @@ python verify/decode-panel-qr.py <svg>       # 面板二维码栅格化 + zxing 
 - 面板的长相是用 `verify/panel-harness/`（真 `client.js` + 真 react + 假数据）截图核对的，**没有在真 DSH 页面里点开过**（DSH 网页需要启动令牌才能登录）；真机扫码也没有实测。截图见 `verify/shots/`。
 - 归属地的线上表现没测：面板上那台"公网设备"是假数据（`203.0.113.42` 是文档专用地址）；离线脚本只验过 `1.1.1.1` 能查到「澳大利亞 · Queensland · South Brisbane」。
 - 设备名靠 UA：浏览器把 UA 改掉或隐私模式屏蔽 UA，就只能显示「未知设备」；这不影响权限和解除。
-- **安装包（Setup.exe）的安装过程没能在本机跑通**：Inno 的安装进程在这台机器上写 `Program Files` / `%LOCALAPPDATA%\Programs` / `HKCU\...\Uninstall` 一律 `错误 5`，连三行的最小脚本也一样——本机环境限制（DSH 的进程全提权，Inno 切到的受限令牌被拒），不是脚本问题。绿色包（`dist/DropSluice-1.0.1-portable.zip`）已实测可跑。
+- **安装包（Setup.exe）的安装过程没能在本机跑通**：Inno 的安装进程在这台机器上写 `Program Files` / `%LOCALAPPDATA%\Programs` / `HKCU\...\Uninstall` 一律 `错误 5`，连三行的最小脚本也一样——本机环境限制（DSH 的进程全提权，Inno 切到的受限令牌被拒），不是脚本问题。绿色包（`dist/DropSluice-1.0.2-portable.zip`）已实测可跑。
 - **APK 没在真手机装过**：产物、签名、manifest 都验了，相机预览与扫码这条链路需要真机确认一次。

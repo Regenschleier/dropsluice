@@ -28,6 +28,7 @@ const ASSETS = {
   'style.css': 'public/style.css',
   'pair.html': 'public/pair.html',
   'pair.js': 'public/pair.js',
+  'need-app.html': 'public/need-app.html',
   'desktop.html': 'desktop/desktop.html',
 };
 

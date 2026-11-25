@@ -5,4 +5,4 @@
  * 三处曾经各写各的，一改就漏。安卓那边的 versionName 在 android/app/build.gradle
  * 里（跟这里不一致时 release.mjs 会警告）。
  */
-export const VERSION = '1.0.1';
+export const VERSION = '1.0.2';

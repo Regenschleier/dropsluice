@@ -8,6 +8,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, statSync, existsSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { VERSION } from '../scripts/version.mjs';
 
@@ -39,9 +40,13 @@ const textExt = new Set(['.mjs', '.js', '.json', '.md', '.html', '.css', '.txt',
 // ---------- 1. 受控文件里不该出现的本机痕迹 / 凭证 ----------
 console.log('1) 受控文件内容扫描');
 
+// 本机用户名不在代码里写死：一是换台机器还能跑，二是这个文件自己也要过扫描
+const HOME_USER = os.userInfo().username;
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const SECRET_RULES = [
-  { name: '本机绝对路径（C:\\Users\\uniform-rain）', re: /C:\\\\?Users\\\\?uniform-rain/i },
-  { name: '本机用户名 uniform-rain', re: /uniform-rain/i },
+  { name: `本机绝对路径（C:\\Users\\${HOME_USER}）`, re: new RegExp(`C:\\\\?Users\\\\?${escapeRe(HOME_USER)}`, 'i') },
+  { name: `本机用户名 ${HOME_USER}`, re: new RegExp(escapeRe(HOME_USER), 'i') },
   { name: '真实局域网 IP（10.17.x.x）', re: /\b10\.17\.\d{1,3}\.\d{1,3}\b/ },
   { name: 'GitHub token', re: /(github_pat_[A-Za-z0-9_]{20,}|ghp_[A-Za-z0-9]{30,}|gho_[A-Za-z0-9]{30,})/ },
   { name: '私钥块', re: /-----BEGIN (?:OPENSSH|RSA|EC|DSA|PGP) PRIVATE KEY-----/ },
@@ -130,7 +135,7 @@ if (WITH_DIST) {
   console.log('4) dist/ 成品扫描');
   const distDir = path.join(ROOT, 'dist');
   const targets = ['DropSluice.exe', `DropSluice-${VERSION}.apk`];
-  const needles = [Buffer.from('C:\\Users\\uniform-rain'), Buffer.from('10.17.'), Buffer.from('github_pat_')];
+  const needles = [Buffer.from(`C:\\Users\\${HOME_USER}`), Buffer.from('10.17.'), Buffer.from('github_pat_')];
   for (const t of targets) {
     const abs = path.join(distDir, t);
     if (!existsSync(abs)) {
