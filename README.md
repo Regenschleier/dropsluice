@@ -245,9 +245,9 @@ python verify/decode-panel-qr.py               # 把面板上的二维码 SVG �
 
 | 产物 | 大小 | 怎么用 | 适合谁 |
 | --- | --- | --- | --- |
-| `dist/DropSluice-1.0.4-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
+| `dist/DropSluice-1.0.12-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
 | `dist/DropSluice.exe` | ~90 MB | 直接双击（单文件，自带 Node） | 自己放个地方跑 |
-| `dist/DropSluice-Setup-1.0.4.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
+| `dist/DropSluice-Setup-1.0.12.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
 
 exe 是**单文件**：Node 官方 SEA（Single Executable Application）把 `outfile + node.exe` 缝在一起，`public/`、`desktop/` 里的 6 个文件作为 assets 内嵌，双击即用，目标机器**不需要装 Node**。
 
@@ -285,7 +285,7 @@ winget install --id JRSoftware.InnoSetup --accept-source-agreements --accept-pac
 # ② 抓简体中文语言包到 build\tools\ChineseSimplified.isl（Inno 自带 Languages\ 里没有中文）
 node scripts/fetch-inno-chinese.mjs
 
-# ③ 编译：产物是 dist\DropSluice-Setup-1.0.4.exe
+# ③ 编译：产物是 dist\DropSluice-Setup-1.0.12.exe
 "C:\Users\<你>\AppData\Local\Programs\Inno Setup 6\ISCC.exe" installer\dropsluice.iss
 ```
 
@@ -308,7 +308,7 @@ node scripts/fetch-inno-chinese.mjs
 # 模拟真双击（拿到真控制台）
 cmd /c start "" "$PWD\dist\DropSluice.exe" --no-open
 Get-Process DropSluice        # 5 秒后还在 = 窗口没被关掉
-node verify/exe-e2e.mjs --exe dist\DropSluice.exe --port 18903   # 18 项
+node verify/exe-e2e.mjs --exe dist\DropSluice.exe --port 18903   # 20 项
 ```
 
 ### 6.2 手机端：APK
@@ -358,16 +358,16 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 - 二维码编码器：16 段测试串 × 8 种掩码 = **128 个矩阵与 python-qrcode 逐格完全一致**；zxing 能把每种掩码都解码回原文；终端半块字符版 5 项回归全过。
 - 服务端 e2e **37 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401、**Tailscale 的 `100.64/10` 判定 9 个边界值 + 状态里有 `tailnet` 段**、**传输登记表能算速率并标记完成 / 下载进行中 `/api/transfers` 有 `download` 条目**、**分块上传：断在中间能续上并拼回原文件 / 没传完 done 被 409 挡下 / 声明超上限 413**。
 - 设备信息 **30 项**：UA→「iPhone · iOS 18.1 · Safari」、公网/内网判定（`172.16` 内网但 `172.32` 公网）、IP/网卡/Wi-Fi 名落库、`1.1.1.1` 真查到「澳大利亞 · Queensland · South Brisbane · Cloudflare」且第二次走缓存。
-- 打包版 exe **18 项**：面板 200、二维码 SVG、配对、下载 SHA256、**伪造 Host → 403 / 本机 Host → 200**（只允许本机）、解除后 401。
+- 打包版 exe **20 项**：面板 200、二维码 SVG、配对、下载 SHA256、**伪造 Host → 403 / 本机 Host → 200**（只允许本机）、解除后 401。
 - 安全自检 **12 项**（`verify/security.mjs --dist`）：受控文件里没有本机绝对路径/用户名/真实内网 IP/token/私钥/明文口令；受控清单里没有 `dist/`、`.data/`、`*.jks`、`*.apk/.exe/.zip`、token 缓存；HttpOnly/SameSite/上传上限/413/配对限速/JSON 上限/`no-store, no-transform`/本机 Host 校验都在；**成品 exe 与 apk 的二进制里没有 `C:\Users\<你>`、`10.17.`、`github_pat_`**。
-- 绿色包：解压后对解压出来的 exe 跑同一套 18 项，全过；`cmd /c start` 双击模拟 5 秒后进程仍存活。
+- 绿色包：解压后对解压出来的 exe 跑同一套 20 项，全过；`cmd /c start` 双击模拟 5 秒后进程仍存活。
 - APK：`apksigner verify` 通过、`aapt2 dump badging` 的包名/版本/权限/SDK 都对。
 - 插件形态：`plugin_manager` 安装返回 `applied`；`phone_drop` 工具能 start/status/pair/devices/revoke/stop；dock 槽位里能看到 `{id:'phone-drop', order:6}` 的注册。
 
 **未验证（不做任何保证）：**
 
-- **安装包（`DropSluice-Setup-1.0.4.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
-- **APK 没在真手机上装过**：只验证了产物、签名、manifest，没有真的装到手机、没有用手机相机扫过电脑屏幕。相机预览、CameraX 在这个机型上的表现、`DownloadManager` 的保存路径，都还要一次真机确认。
+- **安装包（`DropSluice-Setup-1.0.12.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
+- **APK 已经装到真机上并打开过**（截图里是 1.0.9 之后那套「打不开这台电脑 / net::ERR_CONNECTION_ABORTED」错误页，附目标地址与两个按钮），但**相机扫码、下载保存路径、返回手势**这三项还没逐条确认；CameraX 在这个机型上的预览表现也未单独验证。
 - **真机扫码（App）**：写这份文档的机器上没有可用的手机取件环境，所有"手机端"结论来自 HTTP 层自测（同一套 API、同一套 cookie 逻辑），没有经过真手机。手机浏览器被网关挡掉这件事有自测覆盖（403 引导页 / App 的 UA 放行 / `/apk` 可下载）。
 - **Tailscale 跨网这条线没在真手机上走过**：电脑这一端已经登录并拿到 `100.x` 地址、面板/终端/二维码都验证过，自测只覆盖「`100.64/10` 判定」和「状态里有 tailnet 段」；手机装 Tailscale 后扫远程码、真的传完一个文件，还要你亲手试。
 - **面板在真 DSH 窗口里的渲染**：DSH 网页有启动令牌，非本人浏览器打不开，所以面板长相是用 `verify/panel-harness/`（真实 `client.js` + 真 react + 假数据）截图核对的，**没有在真 DSH 页面里点开过**。打包版自己的面板（`/desktop`）是同一个 HTML，截图用的是 `verify/phone-harness/` 的假数据（见 §0 的说明）。
