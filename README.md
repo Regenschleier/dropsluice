@@ -206,6 +206,7 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 - **不暴露到公网**：这个服务没有做反向代理/端口映射的安全加固，别直接映射到公网。真要从外网用，套一层 VPN（WireGuard/Tailscale 之类）比暴露端口安全得多。
 - **它能读整块磁盘**：这是设计目标（你要的就是"随意调用电脑文件"），但也意味着**拿到令牌的那台手机能读你所有盘**。别把二维码给别人扫，别把令牌抄给别的设备。
 - **上传有上限**：单次上传默认最多 **32 GiB**（`DROPSLUICE_MAX_UPLOAD_MB=2048` 可改小，也可以调大），超了直接 413 并且**不留半截文件**——不会因为一个超大请求把磁盘写满。JSON 请求体上限 1 MiB。
+- **大文件断了能接着传**：8 MiB 以上的文件自动走分块上传（8 MiB 一块）。Wi-Fi 断了、App 被切后台、甚至服务重启，重新选同一个文件就会从断点继续——不用从头再来。
 - **成品里没有本机痕迹**：`verify/security.mjs --dist` 会扫 exe 和 apk 的二进制，确认里面没有本机用户名、目录、真实内网 IP 或 token。
 
 ---
@@ -213,7 +214,7 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 ## 5. 自测怎么跑（想确认「真的没压缩」）
 
 ```bash
-node verify/e2e.mjs          # 端到端 34 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、超限 413、传输进度、解除
+node verify/e2e.mjs          # 端到端 37 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、分块续传、超限 413、传输进度、解除
 node verify/device-info.mjs  # 设备信息 30 项：UA 解析、内网判定、IP/网卡/Wi-Fi/型号、归属地
 node verify/terminal-qr.mjs  # 终端二维码 5 项（矩阵 → 半块字符 → 反推矩阵逐格一致）
 node verify/exe-e2e.mjs      # 打包版 exe 20 项（需要先构建，见 §6.1）
@@ -351,7 +352,7 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 **已验证（都有脚本或命令可复跑）：**
 
 - 二维码编码器：16 段测试串 × 8 种掩码 = **128 个矩阵与 python-qrcode 逐格完全一致**；zxing 能把每种掩码都解码回原文；终端半块字符版 5 项回归全过。
-- 服务端 e2e **34 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401、**Tailscale 的 `100.64/10` 判定 9 个边界值 + 状态里有 `tailnet` 段**、**传输登记表能算速率并标记完成 / 下载进行中 `/api/transfers` 有 `download` 条目**。
+- 服务端 e2e **37 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401、**Tailscale 的 `100.64/10` 判定 9 个边界值 + 状态里有 `tailnet` 段**、**传输登记表能算速率并标记完成 / 下载进行中 `/api/transfers` 有 `download` 条目**、**分块上传：断在中间能续上并拼回原文件 / 没传完 done 被 409 挡下 / 声明超上限 413**。
 - 设备信息 **30 项**：UA→「iPhone · iOS 18.1 · Safari」、公网/内网判定（`172.16` 内网但 `172.32` 公网）、IP/网卡/Wi-Fi 名落库、`1.1.1.1` 真查到「澳大利亞 · Queensland · South Brisbane · Cloudflare」且第二次走缓存。
 - 打包版 exe **18 项**：面板 200、二维码 SVG、配对、下载 SHA256、**伪造 Host → 403 / 本机 Host → 200**（只允许本机）、解除后 401。
 - 安全自检 **12 项**（`verify/security.mjs --dist`）：受控文件里没有本机绝对路径/用户名/真实内网 IP/token/私钥/明文口令；受控清单里没有 `dist/`、`.data/`、`*.jks`、`*.apk/.exe/.zip`、token 缓存；HttpOnly/SameSite/上传上限/413/配对限速/JSON 上限/`no-store, no-transform`/本机 Host 校验都在；**成品 exe 与 apk 的二进制里没有 `C:\Users\<你>`、`10.17.`、`github_pat_`**。

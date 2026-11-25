@@ -85,6 +85,13 @@
 | GET/HEAD | `/api/download?path=` | 单文件下载，支持 `Range`（206），`filename*=UTF-8''` |
 | GET | `/api/zip?path=` | 整个目录流式打包（store 模式，chunked，不落临时文件） |
 | POST | `/api/upload?path=` | 上传：`x-file-name` 头 + 原始 body，重名自动加 ` (n)` |
+| GET | `/api/upload/resume?path=&name=&size=` | 问断点：返回 `{ id, offset, size, chunkSize }`（`offset` 就是已经收到的字节数） |
+| PUT | `/api/upload/resume/chunk?path=&name=&size=&offset=` | 传一块（8 MiB）。偏移对不上返回 409 + 服务端的真实 `offset` |
+| POST | `/api/upload/resume/done?path=&name=&size=` | 收尾：校验字节数够了才从临时目录 `rename` 到目标目录（重名同样加 ` (n)`） |
+| DELETE | `/api/upload/resume?path=&name=&size=` | 放弃这次上传，删掉临时块 |
+
+分块上传的临时文件放在数据目录的 `uploads/` 下，文件名是 `sha1(目标目录\0文件名\0总大小).slice(0,32) + ".part"`——
+所以服务端重启、手机换 Wi-Fi、App 被杀，只要再问一次断点就能接着传；同一个文件重复传也不会互相覆盖。
 
 身份：Cookie `pd_session`（HttpOnly、SameSite=Lax、1 年）或 `Authorization: Bearer <token>`。
 
@@ -143,7 +150,7 @@
 ## 自测
 
 ```powershell
-node verify/e2e.mjs                          # 34 项端到端（自己起临时端口的服务）
+node verify/e2e.mjs                          # 37 项端到端（自己起临时端口的服务）
 node verify/exe-e2e.mjs                      # 18 项对 dist/DropSluice.exe 的端到端
 node verify/security.mjs --dist               # 12 项安全自检（本机痕迹 / 受控清单 / 成品二进制）
 node verify/device-info.mjs                  # 30 项设备信息（UA / 内网判定 / 清单字段 / 归属地）

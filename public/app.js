@@ -199,6 +199,42 @@
     location.href = `/api/zip?path=${encodeURIComponent(cwd)}`;
   };
 
+  // 大文件走分块断点续传：断了、切后台、换网络，重新问一次断点就能接着传。
+  // 小文件还是老样子一次 POST，省得为几 KB 的文件开三条请求。
+  const RESUMABLE_FROM = 8 * 1024 * 1024;
+  const CHUNK = 4 * 1024 * 1024;
+
+  async function uploadResumable(dir, file) {
+    const q = `path=${encodeURIComponent(dir)}&name=${encodeURIComponent(file.name)}&size=${file.size}`;
+    let { offset } = await api(`/api/upload/resume?${q}`);
+    while (offset < file.size) {
+      const end = Math.min(offset + CHUNK, file.size);
+      let attempt = 0;
+      for (;;) {
+        try {
+          const res = await fetch(`/api/upload/resume/chunk?${q}&offset=${offset}`, {
+            method: 'PUT',
+            credentials: 'same-origin',
+            headers: { 'content-type': 'application/octet-stream' },
+            body: file.slice(offset, end),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.status === 409) { offset = data.offset; break; }   // 服务端说断点变了，按它的来
+          if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+          offset = data.offset;
+          setStatus(`上传中：${file.name}（${Math.floor((offset / file.size) * 100)}%）`);
+          break;
+        } catch (err) {
+          if (++attempt > 3) throw err;
+          await new Promise((r) => setTimeout(r, 600 * attempt));
+          // 断线后先问服务端到底收到哪了，避免重复传
+          offset = (await api(`/api/upload/resume?${q}`)).offset;
+        }
+      }
+    }
+    return api(`/api/upload/resume/done?${q}`, { method: 'POST' });
+  }
+
   $('uploadInput').onchange = async (ev) => {
     const files = [...ev.target.files];
     if (!files.length) return;
@@ -206,15 +242,19 @@
     for (const f of files) {
       setStatus(`上传中：${f.name}（${fmtSize(f.size)}）`);
       try {
-        const res = await fetch(`/api/upload?path=${encodeURIComponent(cwd)}`, {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'x-file-name': encodeURIComponent(f.name), 'content-type': 'application/octet-stream' },
-          body: f,
-        });
-        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || `HTTP ${res.status}`);
+        if (f.size >= RESUMABLE_FROM) {
+          await uploadResumable(cwd, f);
+        } else {
+          const res = await fetch(`/api/upload?path=${encodeURIComponent(cwd)}`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'x-file-name': encodeURIComponent(f.name), 'content-type': 'application/octet-stream' },
+            body: f,
+          });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || `HTTP ${res.status}`);
+        }
       } catch (err) {
-        setStatus(`上传失败：${err.message}`, true);
+        setStatus(`上传失败：${err.message}（大文件重新选一次会接着断点传）`, true);
         ev.target.value = '';
         return;
       }

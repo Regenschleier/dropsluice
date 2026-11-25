@@ -362,8 +362,89 @@ await check('超过上限的上传被 413 挡下，且不留半截文件', async
   return `limit=${d.limit}`;
 });
 
-// ---------- 7. 手机端只认 App ----------
-console.log('7) 手机端只认 App（浏览器被挡在网页端外）');
+// ---------- 6.5 分块上传（断点续传） ----------
+console.log('6.5) 分块上传（断点续传）');
+const chunkQ = (name, size) => `path=${encodeURIComponent(tmp)}&name=${encodeURIComponent(name)}&size=${size}`;
+
+await check('分块上传：断在中间能续上，最后拼成原文件', async () => {
+  const data = Buffer.alloc(900);
+  for (let i = 0; i < data.length; i++) data[i] = i % 251;
+  const q = chunkQ('分块.bin', data.length);
+  const half = 450;
+
+  const init = await (await req(`/api/upload/resume?${q}`)).json();
+  assert(init.offset === 0, `初始断点应为 0，实际 ${init.offset}`);
+
+  let r = await req(`/api/upload/resume/chunk?${q}&offset=0`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/octet-stream' },
+    body: data.subarray(0, half),
+  });
+  assert(r.status === 200, `第一块失败：${r.status}`);
+  assert((await r.json()).offset === half, '第一块之后断点不对');
+
+  // 模拟中途断线：重新问一次断点
+  const again = await (await req(`/api/upload/resume?${q}`)).json();
+  assert(again.offset === half, `重连后断点应为 ${half}，实际 ${again.offset}`);
+
+  // 客户端记错偏移 → 409 并告诉它真断点
+  r = await req(`/api/upload/resume/chunk?${q}&offset=0`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/octet-stream' },
+    body: data.subarray(0, 10),
+  });
+  assert(r.status === 409, `错偏移期望 409，实际 ${r.status}`);
+  assert((await r.json()).offset === half, '409 里给的断点不对');
+
+  // 收尾前不许落地
+  let landed = true;
+  try { await stat(path.join(tmp, '分块.bin')); } catch { landed = false; }
+  assert(!landed, '还没 done 就已经把文件写进目标目录了');
+
+  r = await req(`/api/upload/resume/chunk?${q}&offset=${half}`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/octet-stream' },
+    body: data.subarray(half),
+  });
+  assert(r.status === 200, `第二块失败：${r.status}`);
+
+  const done = await req(`/api/upload/resume/done?${q}`, { method: 'POST' });
+  assert(done.status === 200, `收尾失败：${done.status} ${await done.text().catch(() => '')}`);
+  const got = await readFile(path.join(tmp, '分块.bin'));
+  assert(got.equals(data), '拼出来的文件内容不符');
+  return `${data.length} B / 两块`;
+});
+
+await check('分块上传：没传完就 done 会被 409 挡下', async () => {
+  const data = Buffer.alloc(600, 3);
+  const q = chunkQ('半截.bin', data.length);
+  await req(`/api/upload/resume/chunk?${q}&offset=0`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/octet-stream' },
+    body: data.subarray(0, 200),
+  });
+  const r = await req(`/api/upload/resume/done?${q}`, { method: 'POST' });
+  assert(r.status === 409, `期望 409，实际 ${r.status}`);
+  const d = await r.json();
+  assert(d.error === 'incomplete' && d.offset === 200, `返回不对：${JSON.stringify(d)}`);
+
+  // 放弃：DELETE 之后断点归零
+  await req(`/api/upload/resume?${q}`, { method: 'DELETE' });
+  const again = await (await req(`/api/upload/resume?${q}`)).json();
+  assert(again.offset === 0, `放弃后断点应归零，实际 ${again.offset}`);
+  return 'incomplete → 409 → 放弃归零';
+});
+
+await check('分块上传：声明的总大小超上限直接 413', async () => {
+  const q = chunkQ('太大.bin', 4096); // 测试服务上限 1 KiB
+  const r = await req(`/api/upload/resume?${q}`);
+  assert(r.status === 413, `期望 413，实际 ${r.status}`);
+  const d = await r.json();
+  assert(d.error === 'too_large', `error 字段不对：${d.error}`);
+  return `limit=${d.limit}`;
+});
+
+// ---------- 7. 手机端只认 App ----------console.log('7) 手机端只认 App（浏览器被挡在网页端外）');
 await check('isMobileBrowser 判定（浏览器拦、App 不拦、桌面不拦）', async () => {
   const phone = 'Mozilla/5.0 (Linux; Android 14; V2465A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Mobile Safari/537.36';
   assert(isMobileBrowser(phone) === true, '安卓浏览器应被判为手机浏览器');
