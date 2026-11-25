@@ -1,16 +1,16 @@
 # DropSluice · 手机取件
 
-## ⬇️ 直接下载
+## ⬇️ 直接下载（v1.0.6）
 
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
-| 在电脑上跑（单文件，双击即用） | **[DropSluice.exe](https://github.com/Regenschleier/dropsluice/releases)** | ~90 MB |
-| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.6.apk](https://github.com/Regenschleier/dropsluice/releases)** | ~3.3 MB |
-| 想要安装向导 | [DropSluice-Setup-1.0.6.exe](https://github.com/Regenschleier/dropsluice/releases) | ~24 MB |
-| 不想安装、解压就用 | [DropSluice-1.0.6-portable.zip](https://github.com/Regenschleier/dropsluice/releases) | ~33 MB |
-| 核对下载是否完整 | [SHA256SUMS.txt](https://github.com/Regenschleier/dropsluice/releases) | 1 KB |
+| 在电脑上跑（单文件，双击即用） | **[DropSluice.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice.exe)** | ~90 MB |
+| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.6.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.6.apk)** | ~3.3 MB |
+| 想要安装向导 | [DropSluice-Setup-1.0.6.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.6.exe) | ~24 MB |
+| 不想安装、解压就用 | [DropSluice-1.0.6-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.6-portable.zip) | ~33 MB |
+| 核对下载是否完整 | [SHA256SUMS.txt](https://github.com/Regenschleier/dropsluice/releases/latest/download/SHA256SUMS.txt) | 1 KB |
 
-> 点进去挑最新的那版，文件在页面底部 **Assets** 里。
+> 上面每条都直接指向最新一版 Release 里的文件（`releases/latest/download/…`），点一下就开始下。
 > 仓库是私有的，链接对**已登录且被授权的账号**有效。
 > 当前 SHA256：exe `D94986AF…B2E9`、apk `8A623BBA…F846`、setup `60CBF540…4FBC`、zip `52C724A3…E35D`（完整值见 `SHA256SUMS.txt`）。
 
