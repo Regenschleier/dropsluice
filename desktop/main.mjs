@@ -233,16 +233,6 @@ function banner({ port, lan, code, pairUrl, expiresAt, existing }) {
   }
 
   // 完全不装东西的那条：Cloudflare 快速隧道，面板上点一下就开
-  const tunnel = info.tunnel || {};
-  if (tunnel.supported) {
-    if (tunnel.running && tunnel.url) {
-      console.log(`  公网地址（临时）：${tunnel.url}`);
-      if (tunnel.pairUrl) console.log(`    一键配对链接： ${tunnel.pairUrl}`);
-    } else {
-      console.log('  借别人 Wi-Fi / 公司网也能连：面板上点「开公网地址」（走 Cloudflare，域名每次会变）');
-    }
-    console.log('');
-  }
   if (HAS_CONSOLE) {
     console.log('  关掉这个窗口 = 停止服务。');
   } else {

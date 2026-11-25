@@ -126,27 +126,6 @@
     </div>
   </section>
 
-  <section class="card" id="tunnelCard" hidden>
-    <h2>公网地址（借别人 Wi-Fi / 公司网也能连）</h2>
-    <p class="hint">Tailscale 要两端都装；这个不用，点一下就由 Cloudflare 给一个 https 地址，手机用流量直接开。代价：域名每次重开都会变，速度也比局域网慢。配对码和 Cookie 规矩不变。</p>
-    <div class="pair" id="tunnelBox" hidden>
-      <div class="qr" id="qrTunnel"><span>正在生成二维码…</span></div>
-      <div class="pairinfo">
-        <div class="label">手机 App 扫这个码（或手动打开下面地址）</div>
-        <div class="addr">
-          <code id="tunnelUrl">—</code>
-          <button id="btnCopyTunnel" class="ghost">复制</button>
-        </div>
-        <div class="dev-meta" id="tunnelNote">—</div>
-      </div>
-    </div>
-    <div class="actions">
-      <button id="btnTunnelStart">开公网地址</button>
-      <button id="btnTunnelStop" class="danger" hidden>关掉公网地址</button>
-    </div>
-    <p class="hint" id="tunnelHint" hidden></p>
-  </section>
-
   <section class="card" id="xferCard" hidden>
     <h2>正在传输</h2>
     <p class="hint">手机这会儿在传什么、传了多少、多快。传完会自动消失。</p>
@@ -292,45 +271,6 @@ function render(state) {
     }
   }
 
-  // 公网地址（cloudflared）：在不在都显示这张卡，只有「没装 cloudflared」时才藏
-  const tn = state.tunnel || {};
-  const tunnelCard = $('tunnelCard');
-  tunnelCard.hidden = tn.supported === false;
-  const tunnelBox = $('tunnelBox');
-  const startBtn = $('btnTunnelStart');
-  const stopBtn = $('btnTunnelStop');
-  const hint = $('tunnelHint');
-  if (tn.supported !== false) {
-    const up = Boolean(tn.running && tn.url);
-    tunnelBox.hidden = !up;
-    startBtn.hidden = up;
-    stopBtn.hidden = !up;
-    startBtn.disabled = Boolean(tn.running && !tn.url);
-    startBtn.textContent = tn.running && !tn.url ? '正在开…' : '开公网地址';
-    if (up) {
-      $('tunnelUrl').textContent = tn.url;
-      $('tunnelUrl').title = tn.url;
-      $('tunnelNote').textContent = tn.startedAt
-        ? `这个域名是临时分的，关掉或重启电脑就变；手机连上后一直有效到关掉为止`
-        : '—';
-      const tbox = $('qrTunnel');
-      if (p.open) {
-        tbox.classList.remove('empty');
-        tbox.innerHTML = `<img alt="公网配对二维码" src="/qr.svg?target=tunnel&t=${Date.now()}">`;
-      } else {
-        tbox.classList.add('empty');
-        tbox.innerHTML = '<span>配对窗口没开<br>点上面「换一个配对码」</span>';
-      }
-    }
-    if (tn.error) {
-      hint.hidden = false;
-      hint.textContent = `上次没开成：${tn.error}`;
-    } else {
-      hint.hidden = true;
-      hint.textContent = '';
-    }
-  }
-
   const tick = () => {
     $('countdown').textContent = p.open && p.expiresAt
       ? `过期 ${new Date(p.expiresAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}（${fmtLeft(p.expiresAt - Date.now())}）`
@@ -377,38 +317,6 @@ $('btnCopyRemote').onclick = async () => {
   } catch {
     $('btnCopyRemote').textContent = '复制失败';
   }
-};
-
-$('btnCopyTunnel').onclick = async () => {
-  try {
-    await navigator.clipboard.writeText($('tunnelUrl').textContent);
-    $('btnCopyTunnel').textContent = '已复制';
-    setTimeout(() => ($('btnCopyTunnel').textContent = '复制'), 1200);
-  } catch {
-    $('btnCopyTunnel').textContent = '复制失败';
-  }
-};
-
-$('btnTunnelStart').onclick = async () => {
-  const btn = $('btnTunnelStart');
-  btn.disabled = true;
-  btn.textContent = '正在开…（第一次要拉隧道，等十几秒）';
-  try {
-    const r = await fetch('/api/admin/tunnel/start', { method: 'POST' });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      $('tunnelHint').hidden = false;
-      $('tunnelHint').textContent = data.message ? `没开成：${data.message}` : `没开成（HTTP ${r.status}）`;
-    }
-  } finally {
-    btn.disabled = false;
-    await refresh();
-  }
-};
-
-$('btnTunnelStop').onclick = async () => {
-  await fetch('/api/admin/tunnel/stop', { method: 'POST' });
-  await refresh();
 };
 
 $('btnPair').onclick = async () => {

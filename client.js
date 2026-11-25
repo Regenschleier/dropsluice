@@ -297,10 +297,9 @@ window.__ModuleLoader__.load({
           ),
         );
 
-        // 手机不在同一个 Wi-Fi（开着流量 / 借别人家网）时：Tailscale 或公网地址这两条也能扫
+        // 手机不在同一个 Wi-Fi（开着流量 / 借别人家网）时，走 Tailscale 那条
         const ts = snap?.tailnet;
-        const tun = snap?.tunnel;
-        const remoteUrl = ts?.up && ts.url ? `${ts.url}（Tailscale）` : tun?.running && tun.url ? `${tun.url}（公网临时地址）` : null;
+        const remoteUrl = ts?.up && ts.url ? `${ts.url}（Tailscale）` : null;
         if (remoteUrl) {
           rows.push(
             h(

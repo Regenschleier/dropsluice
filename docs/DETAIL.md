@@ -26,35 +26,6 @@
 
 **为什么只给本机**：这些接口会吐出配对码，等于把"钥匙"放在兜里。DSH 的网页虽然现在只听 `127.0.0.1`，但它的 Mobile Access 会把同一个 origin 代理到局域网，而插件路由不在网页自己的令牌门后面。所以每个请求都检查 `Host` 头必须是回环地址，并且没有 `X-Forwarded-*`；否则 403。
 
-### 公网地址（cloudflared 快速隧道）
-
-| 方法 | 路径 | 说明 |
-| --- | --- | --- |
-| POST | `/api/admin/tunnel/start` | 拉起 `cloudflared tunnel --url http://127.0.0.1:<端口>`，等到它打出 `https://*.trycloudflare.com` 再返回；找不到 cloudflared 回 503 `tunnel_unavailable` |
-| POST | `/api/admin/tunnel/stop` | 杀掉隧道进程，清空地址 |
-| GET | `/qr.svg?target=tunnel` | 画「公网域名 + 当前配对码」的码；隧道没开时 404「公网地址没开」 |
-
-隧道是服务的子进程：`close()` 里会 `tunnel.stop()`，所以停服务不会留孤儿。`startDropSluice` 支持 `DROPSLUICE_TUNNEL=auto` 开机即开；`DROPSLUICE_CLOUDFLARED` 指定可执行文件路径；`DROPSLUICE_TUNNEL_TOKEN` 走具名隧道（此时地址由你自己的域名决定，用 `DROPSLUICE_TUNNEL_URL` 告诉面板怎么显示）。
-
-`state.tunnel` 形状：`{ supported, running, url, startedAt, error, pairUrl }`。
-
-`/phone-drop/state` 里每台设备的形状（`devicesDetailed()` 组装）：
-
-```json
-{
-  "id": "6f1c…", "name": "我的手机",
-  "ip": "192.168.1.20", "ipChangedAt": 1764050400000, "iface": "WLAN",
-  "client": { "kind": "phone", "model": "iPhone", "os": "iOS 18.1", "browser": "Safari",
-              "label": "iPhone · iOS 18.1 · Safari" },
-  "network": { "kind": "lan", "iface": "WLAN", "ssid": "MyWiFi-5G" },
-  "location": null,
-  "createdAt": 1764046800000, "lastSeenAt": 1764050400000
-}
-```
-
-- 公网设备（`network.kind === 'public'`）才有 `location`：`{place:'中国 · 上海', isp:'China Telecom', source:'ip-api.com', at}`，24 小时缓存。查询本身会把对端公网 IP 发给第三方，这点在 README 里明写了。
-- `iface` 是**手机连进来的那条网卡**（用 `req.socket.localAddress` 反查），不是手机自己的网卡——手机那边的信息只能靠 UA 猜。
-- `describeDevices()` 里永远不含 `tokenHash`，面板拿到的数据就算被截图/转发也换不到令牌。
 
 ## 每台设备的地域为什么只能是"同一局域网"
 
@@ -162,7 +133,7 @@
 ## 自测
 
 ```powershell
-node verify/e2e.mjs                          # 40 项端到端（自己起临时端口的服务）
+node verify/e2e.mjs                          # 37 项端到端（自己起临时端口的服务）
 node verify/exe-e2e.mjs                      # 18 项对 dist/DropSluice.exe 的端到端
 node verify/security.mjs --dist               # 12 项安全自检（本机痕迹 / 受控清单 / 成品二进制）
 node verify/device-info.mjs                  # 30 项设备信息（UA / 内网判定 / 清单字段 / 归属地）

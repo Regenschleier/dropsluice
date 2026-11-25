@@ -592,38 +592,6 @@ await check('状态里有 tailnet 段（面板据此显示远程那张码）', a
   return s.tailnet.up ? `已连：${s.tailnet.ip}` : '未登录 Tailscale（也能正常跑）';
 });
 
-// ---------- 10. 公网地址（cloudflared 隧道）----------
-console.log('10) 公网地址（cloudflared）');
-await check('状态里有 tunnel 段；没装 cloudflared 时 supported=false', async () => {
-  const r = await fetch(`${BASE}/api/admin/state`);
-  assert(r.status === 200, `期望 200，实际 ${r.status}`);
-  const s = await r.json();
-  assert(s.tunnel && typeof s.tunnel === 'object', '没有 tunnel 字段');
-  assert(typeof s.tunnel.supported === 'boolean', 'tunnel.supported 不是布尔');
-  assert(typeof s.tunnel.running === 'boolean', 'tunnel.running 不是布尔');
-  return `supported=${s.tunnel.supported}，running=${s.tunnel.running}`;
-});
-await check('隧道没开时 /qr.svg?target=tunnel 明确 404「公网地址没开」', async () => {
-  const r = await fetch(`${BASE}/qr.svg?target=tunnel`);
-  assert(r.status === 404, `期望 404，实际 ${r.status}`);
-  const body = await r.text();
-  assert(body.includes('公网地址没开'), `文案不对：${body}`);
-  return '404 + 中文原因';
-});
-await check('没装 cloudflared 时开公网地址给 503，而不是把服务搞挂', async () => {
-  const r = await fetch(`${BASE}/api/admin/tunnel/start`, { method: 'POST' });
-  if (r.status === 200) {
-    // 装了 cloudflared 的机器会真的去开隧道：那也要能关回来，别留进程
-    const off = await fetch(`${BASE}/api/admin/tunnel/stop`, { method: 'POST' });
-    assert(off.status === 200, `关隧道失败：${off.status}`);
-    return '这台装了 cloudflared（已当场关掉）';
-  }
-  assert(r.status === 503, `期望 503，实际 ${r.status}`);
-  const s = await r.json();
-  assert(s.error === 'tunnel_unavailable', `错误码不对：${s.error}`);
-  return '503 tunnel_unavailable';
-});
-
 // ---------- 汇总 ----------
 await rm(tmp, { recursive: true, force: true });
 await globalThis.__cleanup?.();
