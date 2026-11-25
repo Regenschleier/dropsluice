@@ -68,6 +68,14 @@ const state = {
     },
   ],
   firewallCommand: 'New-NetFirewallRule -DisplayName "DropSluice"',
+  // 面板截图的「不在同一个 Wi-Fi」那张卡：用演示地址，别把真实尾网 IP 拍进图里
+  tailnet: {
+    up: true,
+    ip: '100.101.102.103',
+    dnsName: 'demo-pc.tailnet-example.ts.net',
+    url: `http://100.101.102.103:18888/`,
+    pairUrl: `http://100.101.102.103:18888/pair?c=${code}`,
+  },
 };
 
 const TYPES = {
@@ -101,8 +109,10 @@ createServer(async (req, res) => {
       return res.end(JSON.stringify({ ...state, addresses: [{ address: LAN, iface: 'WLAN', virtual: false }] }));
     }
     if (url.pathname === '/qr.svg') {
+      const remote = url.searchParams.get('target') === 'remote';
+      const target = remote ? state.tailnet.pairUrl : state.pairing.url;
       res.writeHead(200, { 'content-type': 'image/svg+xml', 'cache-control': 'no-store' });
-      return res.end(qrSvg(state.pairing.url, { size: 320, margin: 2 }));
+      return res.end(qrSvg(target, { size: 320, margin: 2 }));
     }
     const rel = url.pathname === '/' ? 'harness.html' : url.pathname.slice(1);
     const isClient = rel === 'client.js';

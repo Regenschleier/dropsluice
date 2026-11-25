@@ -14,6 +14,7 @@ import path from 'node:path';
 import os from 'node:os';
 
 import { isMobileBrowser } from '../lib/app.mjs';
+import { isTailnetIp } from '../lib/net.mjs';
 
 let pass = 0;
 let fail = 0;
@@ -436,7 +437,7 @@ if (!lanIp) {
 }
 
 // ---------- 8. 解除配对 ----------
-console.log('7) 解除配对');
+console.log('8) 解除配对');
 await check('unpair 后令牌失效', async () => {
   const r1 = await req('/api/unpair', { method: 'POST' });
   assert(r1.status === 200, `期望 200，实际 ${r1.status}`);
@@ -444,6 +445,33 @@ await check('unpair 后令牌失效', async () => {
   const r2 = await req('/api/roots');
   assert(r2.status === 401, `期望 401，实际 ${r2.status}`);
   return '401';
+});
+
+// ---------- 9. Tailscale / 跨网络 ----------
+console.log('9) Tailscale（不在同一个 Wi-Fi）');
+await check('isTailnetIp 只认 100.64/10', async () => {
+  const cases = [
+    ['100.64.0.1', true],
+    ['100.127.255.254', true],
+    ['100.102.209.27', true],
+    ['100.63.255.255', false],
+    ['100.128.0.1', false],
+    ['192.168.1.5', false],
+    ['8.8.8.8', false],
+    ['', false],
+    ['not-an-ip', false],
+  ];
+  const wrong = cases.filter(([ip, want]) => isTailnetIp(ip) !== want);
+  assert(!wrong.length, `判定错的：${wrong.map(([ip, w]) => `${ip} 期望 ${w}`).join('，')}`);
+  return `${cases.length} 个边界值`;
+});
+await check('状态里有 tailnet 段（面板据此显示远程那张码）', async () => {
+  const r = await fetch(`${BASE}/api/admin/state`);
+  assert(r.status === 200, `期望 200，实际 ${r.status}`);
+  const s = await r.json();
+  assert(s.tailnet && typeof s.tailnet === 'object', '没有 tailnet 字段');
+  assert(typeof s.tailnet.up === 'boolean', 'tailnet.up 不是布尔');
+  return s.tailnet.up ? `已连：${s.tailnet.ip}` : '未登录 Tailscale（也能正常跑）';
 });
 
 // ---------- 汇总 ----------

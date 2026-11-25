@@ -1,18 +1,18 @@
 # DropSluice · 手机取件
 
-## ⬇️ 直接下载（v1.0.3）
+## ⬇️ 直接下载（v1.0.4）
 
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
 | 在电脑上跑（单文件，双击即用） | **[DropSluice.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice.exe)** | ~90 MB |
-| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.3.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.3.apk)** | ~3.3 MB |
-| 想要安装向导 | [DropSluice-Setup-1.0.3.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.3.exe) | ~24 MB |
-| 不想安装、解压就用 | [DropSluice-1.0.3-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.3-portable.zip) | ~33 MB |
+| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.4.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.4.apk)** | ~3.3 MB |
+| 想要安装向导 | [DropSluice-Setup-1.0.4.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.4.exe) | ~24 MB |
+| 不想安装、解压就用 | [DropSluice-1.0.4-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.4-portable.zip) | ~33 MB |
 | 核对下载是否完整 | [SHA256SUMS.txt](https://github.com/Regenschleier/dropsluice/releases/latest/download/SHA256SUMS.txt) | 1 KB |
 
 > 都在同一个 Release 里：[全部产物](https://github.com/Regenschleier/dropsluice/releases/latest)。
 > 仓库是私有的，链接对**已登录且被授权的账号**有效。
-> 当前 SHA256：exe `23871FE1…F799`、apk `34388FC0…1610`、setup `9C0AF5BA…65F7`、zip `BA307DB6…DD32`（完整值见 `SHA256SUMS.txt`）。
+> 当前 SHA256：exe `EFDFA072…5CCC`、apk `CE25941E…0E2F`、setup `F31E860B…C1AA`、zip `72B2F777…7229`（完整值见 `SHA256SUMS.txt`）。
 
 ---
 
@@ -134,9 +134,36 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 
 ---
 
+## 2.6 不在同一个 Wi-Fi？手机开流量也能传（Tailscale）
+
+前面所有用法都假设「手机和电脑在同一个 Wi-Fi」。不在同一个网里时（手机开着流量、在公司连别人家的 Wi-Fi、人在外面），走 **Tailscale** 这条线：
+
+1. 电脑上装一次：`winget install Tailscale.Tailscale`，然后 `tailscale up` 用你自己的账号登录（GitHub / Google 都行）。
+2. 手机上装 Tailscale，登录**同一个账号**，打开开关。
+3. 手机上的 DropSluice App 扫面板里「不在同一个 Wi-Fi？用这条地址」那张码。地址长这样：`http://100.x.x.x:18888/`。
+
+![电脑面板里的 Tailscale 卡片](verify/shots/panel-tailnet.png)
+
+几点说明：
+
+- **只有你自己 Tailnet 里的设备能连**：那条地址在公网不可路由，别人扫不到、也不知道它存在。传输本身是 Tailscale 的端到端加密（WireGuard）。
+- **安全口径没变**：还是「配对过的设备才能读」，还是「只认 App，手机浏览器被挡」。Tailscale 只是把路打通，不改变谁能进门。
+- **防火墙要放行尾网那一段**（管理员 PowerShell 跑一次）：
+
+  ```powershell
+  New-NetFirewallRule -DisplayName "DropSluice (Tailscale)" -Direction Inbound -Protocol TCP `
+    -LocalPort 18888 -Action Allow -Profile Any -RemoteAddress 100.64.0.0/255.192.0.0
+  ```
+
+- **速度**：直连成功时是点对点（能跑到你家宽带上行）；NAT 打洞失败时会走 Tailscale 的中继（DERP），会慢一些，但能通。
+- **不想装 Tailscale 也有别的路**：Cloudflare Tunnel（`cloudflared`）、ngrok、frp 都能把端口开出去，但它们都是「公网可达」——必须配访问控制，否则等于把整台电脑的文件目录挂到公网上。Tailscale 的好处是默认就不对公网开放。
+- 面板上这条卡片只在 `tailscale` 已登录时出现；没装/没登录时，程序照常在局域网里工作。
+
+---
+
 ## 3. 手机打不开？按这个顺序查
 
-1. **确认在同一个网段**：电脑上 `ipconfig` 看 WLAN 的 IPv4（`192.168.x.x` / `10.x.x.x`），手机 Wi-Fi 详情里看自己的 IP，前三段应该一样。手机用流量打不开是正常的——这个服务只在局域网里。
+1. **确认在同一个网段**：电脑上 `ipconfig` 看 WLAN 的 IPv4（`192.168.x.x` / `10.x.x.x`），手机 Wi-Fi 详情里看自己的 IP，前三段应该一样。手机用流量打不开是正常的——这个服务默认只在局域网里；要跨网就用上面 §2.6 的 Tailscale。
 2. **放行防火墙**（Windows 第一次必须手动，尤其是 Wi-Fi 被识别成"公用网络"时）：
 
    ```powershell
@@ -196,9 +223,9 @@ python verify/decode-panel-qr.py               # 把面板上的二维码 SVG �
 
 | 产物 | 大小 | 怎么用 | 适合谁 |
 | --- | --- | --- | --- |
-| `dist/DropSluice-1.0.3-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
+| `dist/DropSluice-1.0.4-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
 | `dist/DropSluice.exe` | ~90 MB | 直接双击（单文件，自带 Node） | 自己放个地方跑 |
-| `dist/DropSluice-Setup-1.0.3.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
+| `dist/DropSluice-Setup-1.0.4.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
 
 exe 是**单文件**：Node 官方 SEA（Single Executable Application）把 `outfile + node.exe` 缝在一起，`public/`、`desktop/` 里的 6 个文件作为 assets 内嵌，双击即用，目标机器**不需要装 Node**。
 
@@ -236,7 +263,7 @@ winget install --id JRSoftware.InnoSetup --accept-source-agreements --accept-pac
 # ② 抓简体中文语言包到 build\tools\ChineseSimplified.isl（Inno 自带 Languages\ 里没有中文）
 node scripts/fetch-inno-chinese.mjs
 
-# ③ 编译：产物是 dist\DropSluice-Setup-1.0.3.exe
+# ③ 编译：产物是 dist\DropSluice-Setup-1.0.4.exe
 "C:\Users\<你>\AppData\Local\Programs\Inno Setup 6\ISCC.exe" installer\dropsluice.iss
 ```
 
@@ -307,7 +334,7 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 **已验证（都有脚本或命令可复跑）：**
 
 - 二维码编码器：16 段测试串 × 8 种掩码 = **128 个矩阵与 python-qrcode 逐格完全一致**；zxing 能把每种掩码都解码回原文；终端半块字符版 5 项回归全过。
-- 服务端 e2e **30 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401。
+- 服务端 e2e **32 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401、**Tailscale 的 `100.64/10` 判定 9 个边界值 + 状态里有 `tailnet` 段**。
 - 设备信息 **30 项**：UA→「iPhone · iOS 18.1 · Safari」、公网/内网判定（`172.16` 内网但 `172.32` 公网）、IP/网卡/Wi-Fi 名落库、`1.1.1.1` 真查到「澳大利亞 · Queensland · South Brisbane · Cloudflare」且第二次走缓存。
 - 打包版 exe **18 项**：面板 200、二维码 SVG、配对、下载 SHA256、**伪造 Host → 403 / 本机 Host → 200**（只允许本机）、解除后 401。
 - 安全自检 **12 项**（`verify/security.mjs --dist`）：受控文件里没有本机绝对路径/用户名/真实内网 IP/token/私钥/明文口令；受控清单里没有 `dist/`、`.data/`、`*.jks`、`*.apk/.exe/.zip`、token 缓存；HttpOnly/SameSite/上传上限/413/配对限速/JSON 上限/`no-store, no-transform`/本机 Host 校验都在；**成品 exe 与 apk 的二进制里没有 `C:\Users\<你>`、`10.17.`、`github_pat_`**。
@@ -317,9 +344,10 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 
 **未验证（不做任何保证）：**
 
-- **安装包（`DropSluice-Setup-1.0.3.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
+- **安装包（`DropSluice-Setup-1.0.4.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
 - **APK 没在真手机上装过**：只验证了产物、签名、manifest，没有真的装到手机、没有用手机相机扫过电脑屏幕。相机预览、CameraX 在这个机型上的表现、`DownloadManager` 的保存路径，都还要一次真机确认。
 - **真机扫码（App）**：写这份文档的机器上没有可用的手机取件环境，所有"手机端"结论来自 HTTP 层自测（同一套 API、同一套 cookie 逻辑），没有经过真手机。手机浏览器被网关挡掉这件事有自测覆盖（403 引导页 / App 的 UA 放行 / `/apk` 可下载）。
+- **Tailscale 跨网这条线没在真手机上走过**：电脑这一端已经登录并拿到 `100.x` 地址、面板/终端/二维码都验证过，自测也只覆盖「`100.64/10` 判定」和「状态里有 tailnet 段」；手机装 Tailscale 后扫远程码、以及手机用流量真的传完一个文件，还要你亲手试。
 - **面板在真 DSH 窗口里的渲染**：DSH 网页有启动令牌，非本人浏览器打不开，所以面板长相是用 `verify/panel-harness/`（真实 `client.js` + 真 react + 假数据）截图核对的，**没有在真 DSH 页面里点开过**。打包版自己的面板（`/desktop`）是同一个 HTML，截图用的是 `verify/phone-harness/` 的假数据（见 §0 的说明）。
 - **公网 IP 归属地的线上表现**：离线脚本里查过 `1.1.1.1`，面板截图里那台"公网设备"是假数据（`203.0.113.42` 是文档专用地址），没有真的从外网连进来过。
 - **双击闪退的根因只在一台机器上复现过**：`%LOCALAPPDATA%\DropSluice` 被拒、端口被占这两种情况都实测到并修好了；如果还有别的原因（比如杀毒软件拦 SEA exe）仍可能闪退——所以加了"任何退出路径都等一次回车"，让错误有机会留在屏幕上。

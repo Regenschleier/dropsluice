@@ -297,6 +297,49 @@ window.__ModuleLoader__.load({
           ),
         );
 
+        // 手机不在同一个 Wi-Fi（开着流量）时：Tailscale 这条也能扫
+        const ts = snap?.tailnet;
+        if (ts?.up && ts.url) {
+          rows.push(
+            h(
+              'div',
+              { key: 'tailnet', style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 } },
+              h(
+                'code',
+                {
+                  title: ts.dnsName ? `MagicDNS：${ts.dnsName}` : undefined,
+                  style: {
+                    flex: 1,
+                    fontSize: 12,
+                    color: T.text,
+                    background: T.sunken,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 6,
+                    padding: '4px 8px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  },
+                },
+                `${ts.url}（手机用流量时用这条）`,
+              ),
+              h(
+                Btn,
+                {
+                  onClick: async () => {
+                    try {
+                      await navigator.clipboard.writeText(ts.url);
+                    } catch {
+                      /* 复制不了就算了，地址本身能看 */
+                    }
+                  },
+                },
+                '复制',
+              ),
+            ),
+          );
+        }
+
         if (pairing.open) {
           rows.push(
             h(

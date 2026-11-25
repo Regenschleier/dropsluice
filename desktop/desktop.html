@@ -87,7 +87,7 @@
     <h1>DropSluice</h1>
     <span class="pill" id="statusPill">连接中…</span>
   </header>
-  <p class="sub">手机和电脑连同一个 Wi-Fi，用手机扫码就能浏览、下载这台电脑上的文件（原样传输，不压缩）。</p>
+  <p class="sub">手机和电脑连同一个 Wi-Fi，用手机扫码就能浏览、下载这台电脑上的文件（原样传输，不压缩）。不在同一个 Wi-Fi 也行——看下面 Tailscale 那条。</p>
 
   <section class="card">
     <div class="pair">
@@ -109,6 +109,23 @@
     </div>
   </section>
 
+  <section class="card" id="remoteCard" hidden>
+    <h2>不在同一个 Wi-Fi？用这条地址</h2>
+    <p class="hint">手机开着流量、或者连了别的 Wi-Fi 时，走 Tailscale 组网这条线：只有你自己 Tailnet 里的设备能连，路上的字节端到端加密。手机那边要先装 Tailscale、登录同一个账号。</p>
+    <div class="pair">
+      <div class="qr" id="qrRemote"><span>正在生成二维码…</span></div>
+      <div class="pairinfo">
+        <div class="label">手机 Tailscale 打开后，用 App 扫这个码</div>
+        <div class="addr">
+          <code id="remoteUrl">—</code>
+          <button id="btnCopyRemote" class="ghost">复制</button>
+        </div>
+        <div class="label">MagicDNS</div>
+        <div class="dev-meta" id="remoteDns">—</div>
+      </div>
+    </div>
+  </section>
+
   <section class="card">
     <h2>已配对的设备</h2>
     <p class="hint">每台手机第一次扫码时登记在这里。随时可以「解除」，解除后那台手机要重新扫码才能再连。</p>
@@ -120,6 +137,9 @@
     <div>手机连不上？先确认两件事：① 手机和电脑在同一个 Wi-Fi；② 防火墙放行了这个端口。</div>
     <div class="warn">管理员 PowerShell 里跑一次（端口按需替换）：
       <code>New-NetFirewallRule -DisplayName "DropSluice" -Direction Inbound -Protocol TCP -LocalPort 18888 -Action Allow -Profile Private,Public -RemoteAddress LocalSubnet</code>
+    </div>
+    <div class="warn">手机用流量（走 Tailscale）时，还要放行尾网地址那一段：
+      <code>New-NetFirewallRule -DisplayName "DropSluice (Tailscale)" -Direction Inbound -Protocol TCP -LocalPort 18888 -Action Allow -Profile Any -RemoteAddress 100.64.0.0/255.192.0.0</code>
     </div>
     <div>这个页面只允许在本机打开；关掉电脑上那个黑色窗口就等于停止服务。</div>
   </footer>
@@ -149,6 +169,9 @@ function relTime(iso) {
 function placeText(d) {
   if (d.network?.kind === 'lan') {
     return d.network.ssid ? `同一局域网 · Wi-Fi ${d.network.ssid}` : '同一局域网';
+  }
+  if (d.network?.kind === 'tailnet') {
+    return '同一 Tailnet · 用流量也能连';
   }
   if (d.network?.kind === 'public') {
     return d.location?.place ? `${d.location.place} · ${d.location.isp || ''}`.replace(/ · $/, '') : '公网';
@@ -222,6 +245,26 @@ function render(state) {
     box.innerHTML = '<span>配对窗口没开<br>点下面「换一个配对码」</span>';
   }
 
+  // Tailscale 那条线：登录了才显示，配对窗口关着时只显示地址不给码
+  const ts = state.tailnet || {};
+  const remoteCard = $('remoteCard');
+  const canRemote = Boolean(ts.up && ts.ip);
+  remoteCard.hidden = !canRemote;
+  if (canRemote) {
+    const remoteAddr = ts.url || `http://${ts.ip}:${state.port}/`;
+    $('remoteUrl').textContent = remoteAddr;
+    $('remoteUrl').title = remoteAddr;
+    $('remoteDns').textContent = ts.dnsName || '（这台机器没拿到 MagicDNS 名字，用 IP 也行）';
+    const rbox = $('qrRemote');
+    if (p.open) {
+      rbox.classList.remove('empty');
+      rbox.innerHTML = `<img alt="远程配对二维码" src="/qr.svg?target=remote&t=${Date.now()}">`;
+    } else {
+      rbox.classList.add('empty');
+      rbox.innerHTML = '<span>配对窗口没开<br>点上面「换一个配对码」</span>';
+    }
+  }
+
   const tick = () => {
     $('countdown').textContent = p.open && p.expiresAt
       ? `过期 ${new Date(p.expiresAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}（${fmtLeft(p.expiresAt - Date.now())}）`
@@ -257,6 +300,16 @@ $('btnCopy').onclick = async () => {
     setTimeout(() => ($('btnCopy').textContent = '复制'), 1200);
   } catch {
     $('btnCopy').textContent = '复制失败';
+  }
+};
+
+$('btnCopyRemote').onclick = async () => {
+  try {
+    await navigator.clipboard.writeText($('remoteUrl').textContent);
+    $('btnCopyRemote').textContent = '已复制';
+    setTimeout(() => ($('btnCopyRemote').textContent = '复制'), 1200);
+  } catch {
+    $('btnCopyRemote').textContent = '复制失败';
   }
 };
 

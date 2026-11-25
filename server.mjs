@@ -70,6 +70,20 @@ if (info.open && info.url) {
   console.log('  ⚠ 配对窗口没打开，请重新运行。');
 }
 
+// 手机不在同一个 Wi-Fi（开着流量 / 连别的 Wi-Fi）时走 Tailscale 这条
+const ts = info.tailnet;
+if (ts?.up) {
+  console.log('  不在同一个 Wi-Fi？');
+  console.log(`    手机先装 Tailscale 并登录同一个账号，再用 App 扫这条地址的码：`);
+  console.log(`    http://${ts.ip}:${port}/${ts.dnsName ? `   （${ts.dnsName}）` : ''}`);
+  if (ts.pairUrl) console.log(`    一键配对链接：${ts.pairUrl}`);
+  console.log('');
+} else {
+  console.log('  不在同一个 Wi-Fi？');
+  console.log('    需要装 Tailscale 并登录：winget install Tailscale.Tailscale  然后  tailscale up');
+  console.log('');
+}
+
 console.log('  提示：手机连不上多半是 Windows 防火墙拦了。');
 console.log('        管理员 PowerShell 里跑（把端口换成你的）：');
 console.log(`        New-NetFirewallRule -DisplayName "DropSluice" -Direction Inbound -Protocol TCP -LocalPort ${port} -Action Allow -Profile Private`);

@@ -13,7 +13,7 @@ import { spawn } from 'node:child_process';
 
 import { startDropSluice } from '../lib/app.mjs';
 import { printTerminalQr } from '../lib/terminal-qr.mjs';
-import { lanAddresses } from '../lib/net.mjs';
+import { lanAddresses, tailscaleInfo } from '../lib/net.mjs';
 import { dataDir } from '../lib/state.mjs';
 
 /** 打进 exe 里的静态文件清单（顺序无所谓，但名字要和路由里用的一致） */
@@ -157,6 +157,20 @@ function banner({ port, lan, code, pairUrl, expiresAt, existing }) {
   console.log('  电脑上的面板（二维码 / 已配对设备 / 解除权限）：');
   console.log(`    http://127.0.0.1:${port}/desktop`);
   console.log('');
+
+  // 手机不在同一个 Wi-Fi（比如开着流量）时走 Tailscale 这条
+  const ts = tailscaleInfo();
+  if (ts.up && ts.ip) {
+    console.log('  不在同一个 Wi-Fi？（手机用流量 / 连别的 Wi-Fi）');
+    console.log(`    手机先装 Tailscale 并登录同一个账号，然后扫面板里「不在同一个 Wi-Fi」那张码。`);
+    console.log(`    本机 Tailnet 地址：http://${ts.ip}:${port}/${ts.dnsName ? `    （${ts.dnsName}）` : ''}`);
+    if (pairUrl) console.log(`    一键配对链接（走 Tailnet）： http://${ts.ip}:${port}/pair?c=${code}`);
+    console.log('');
+  } else {
+    console.log('  不在同一个 Wi-Fi？（手机用流量 / 连别的 Wi-Fi）');
+    console.log('    需要先装 Tailscale 并登录：winget install Tailscale.Tailscale，再 tailscale up');
+    console.log('');
+  }
   console.log('  关掉这个窗口 = 停止服务。');
   console.log(`  数据目录： ${dataDir()}`);
   console.log(line);
