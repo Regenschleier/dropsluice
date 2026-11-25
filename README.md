@@ -159,6 +159,8 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 - **不想装 Tailscale 也有别的路**：Cloudflare Tunnel（`cloudflared`）、ngrok、frp 都能把端口开出去，但它们都是「公网可达」——必须配访问控制，否则等于把整台电脑的文件目录挂到公网上。Tailscale 的好处是默认就不对公网开放。
 - 面板上这条卡片只在 `tailscale` 已登录时出现；没装/没登录时，程序照常在局域网里工作。
 
+> **完整步骤、每一步在干什么、连不上怎么查**：单独写在 **[docs/remote-tailscale.md](docs/remote-tailscale.md)**（含实测到哪一步、哪些还没验过）。这一节只是速览。
+
 ---
 
 ## 3. 手机打不开？按这个顺序查
