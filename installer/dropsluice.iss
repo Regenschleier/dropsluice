@@ -7,10 +7,14 @@
 ;   3. 产物：dist\DropSluice-Setup-<版本>.exe
 ;
 ; 安装模式（重要）：
-;   PrivilegesRequired=lowest + OverridesAllowed=dialog
-;   → 用户双击时可以选择「为这台电脑的所有用户安装」（会弹 UAC，装进 Program Files）
-;     或「只为我安装」（不需要管理员，装进 %LOCALAPPDATA%\Programs）。
-;   → 静默安装（/VERYSILENT）时沿用当前权限，因此在没有提权的环境里也能装、能测。
+;   PrivilegesRequired=lowest + OverridesAllowed=dialog commandline
+;   → 默认「只为我安装」，不弹 UAC，装进 %LOCALAPPDATA%\Programs\DropSluice。
+;   → 想给这台电脑所有用户装的人，可以在向导里选「为所有用户安装」
+;     （/VERYSILENT 时可传 /PRIVILEGESREQUIRED=admin），那时才写 Program Files。
+;   → 为什么默认改成当前用户：1.0.6 及更早默认是 lowest，但升级时会沿用上次的安装目录
+;     （UsePreviousAppDir=yes）。旧版一旦装在 D:\ 根或 Program Files 这类当前用户写不了的
+;     地方，升级就会「创建目录失败：拒绝访问」（错误 5）然后整个回滚。现在
+;     UsePreviousAppDir=no + 默认落在用户可写的 %LOCALAPPDATA%\Programs，这条故障不复现。
 ;
 ; 防火墙：需要管理员的那一步只在管理员安装模式里做；普通权限安装装完后由面板/说明文档
 ; 告诉用户怎么手动放行（netsh 一行命令）。
@@ -18,7 +22,7 @@
 #define MyAppName "DropSluice"
 ; 版本号默认值；release.mjs 会用 ISCC 的 /DMyAppVersion=… 覆盖，保持和 scripts/version.mjs 一致
 #ifndef MyAppVersion
-  #define MyAppVersion "1.0.1"
+  #define MyAppVersion "1.0.8"
 #endif
 #define MyAppPublisher "DropSluice"
 #define MyAppExeName "DropSluice.exe"
@@ -44,6 +48,12 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog commandline
+; 不沿用上一次装过的目录：旧版可能落在 D:\ 根目录或 Program Files 这类
+; 当前用户写不了的地方，沿用就是「创建目录失败：拒绝访问」然后整个回滚
+; （1.0.6 用户升上来时踩到的就是这一条）。默认改到用户自己可写的位置。
+UsePreviousAppDir=no
+; 同理，也不沿用上一次「只为我安装 / 为所有用户安装」的选择。
+UsePreviousPrivileges=no
 CloseApplications=yes
 RestartApplications=no
 

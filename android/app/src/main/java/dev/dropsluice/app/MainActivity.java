@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.view.KeyEvent;
 import android.view.View;
@@ -27,6 +29,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +57,18 @@ public class MainActivity extends AppCompatActivity {
     private View webContainer;
     private ValueCallback<Uri[]> fileCallback;
 
+    /** 连接中/连不上时盖在网页上的那层：白屏是最没法交代的状态，宁可多说一句。 */
+    private View connOverlay;
+    private View connSpinner;
+    private View btnRetry;
+    private View btnSwitch;
+    private TextView connTitle;
+    private TextView connBody;
+    private final Handler ui = new Handler(Looper.getMainLooper());
+    private Runnable connTimeout;
+    private boolean pageFailed;
+    private static final long CONN_TIMEOUT_MS = 15000L;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +77,15 @@ public class MainActivity extends AppCompatActivity {
         webContainer = findViewById(R.id.webContainer);
         emptyState = findViewById(R.id.emptyState);
         web = findViewById(R.id.web);
+
+        connOverlay = findViewById(R.id.connOverlay);
+        connSpinner = findViewById(R.id.connSpinner);
+        connTitle = findViewById(R.id.connTitle);
+        connBody = findViewById(R.id.connBody);
+        btnRetry = findViewById(R.id.btnRetry);
+        btnSwitch = findViewById(R.id.btnSwitch);
+        btnRetry.setOnClickListener(v -> retryLoad());
+        btnSwitch.setOnClickListener(v -> promptManualUrl());
 
         findViewById(R.id.btnScan).setOnClickListener(v -> startScan());
         findViewById(R.id.btnManual).setOnClickListener(v -> promptManualUrl());
@@ -131,17 +155,51 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                pageFailed = false;
+                showConnecting(url);
+            }
+
+            @Override
+            public void onPageCommitVisible(WebView view, String url) {
+                super.onPageCommitVisible(view, url);
+                // 有内容画出来了就别再盖着，免得挡住还能用的页面
+                if (!pageFailed) hideConn();
+            }
+
+            @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 CookieManager.getInstance().flush();
                 showEmpty(false);
+                if (!pageFailed) hideConn();
             }
 
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                if (request.isForMainFrame()) {
-                    toast(getString(R.string.err_load, String.valueOf(error.getDescription())));
-                }
+                if (!request.isForMainFrame()) return;
+                pageFailed = true;
+                showConnError(
+                        getString(R.string.conn_error_title),
+                        getString(R.string.conn_error_body,
+                                String.valueOf(error.getDescription()),
+                                request.getUrl().toString()));
+            }
+
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest request,
+                                            android.webkit.WebResourceResponse response) {
+                super.onReceivedHttpError(view, request, response);
+                // 403 是服务端的「请用 App 打开」引导页，它自己有内容，不算白屏
+                if (!request.isForMainFrame()) return;
+                int code = response == null ? 0 : response.getStatusCode();
+                if (code == 0 || code == 403) return;
+                pageFailed = true;
+                showConnError(
+                        getString(R.string.conn_error_title),
+                        getString(R.string.conn_error_body, "HTTP " + code,
+                                request.getUrl().toString()));
             }
         });
 
@@ -273,6 +331,63 @@ public class MainActivity extends AppCompatActivity {
     private void showEmpty(boolean show) {
         emptyState.setVisibility(show ? View.VISIBLE : View.GONE);
         webContainer.setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
+    /** 盖一层「正在连 xxx」，超过 15 秒没结果就转成「没回应 + 怎么查」。 */
+    private void showConnecting(String url) {
+        emptyState.setVisibility(View.GONE);
+        webContainer.setVisibility(View.VISIBLE);
+        connOverlay.setVisibility(View.VISIBLE);
+        connSpinner.setVisibility(View.VISIBLE);
+        btnRetry.setVisibility(View.GONE);
+        btnSwitch.setVisibility(View.GONE);
+        connTitle.setText(R.string.conn_connecting);
+        connBody.setText(getString(R.string.conn_connecting_body, url));
+        cancelConnTimeout();
+        connTimeout = () -> {
+            if (connOverlay.getVisibility() != View.VISIBLE) return;
+            if (connSpinner.getVisibility() != View.VISIBLE) return;
+            pageFailed = true;
+            showConnError(getString(R.string.conn_timeout_title),
+                    getString(R.string.conn_timeout_body, url));
+        };
+        ui.postDelayed(connTimeout, CONN_TIMEOUT_MS);
+    }
+
+    private void hideConn() {
+        cancelConnTimeout();
+        connOverlay.setVisibility(View.GONE);
+    }
+
+    private void showConnError(String title, String body) {
+        cancelConnTimeout();
+        connOverlay.setVisibility(View.VISIBLE);
+        connSpinner.setVisibility(View.GONE);
+        btnRetry.setVisibility(View.VISIBLE);
+        btnSwitch.setVisibility(View.VISIBLE);
+        connTitle.setText(title);
+        connBody.setText(body);
+    }
+
+    private void cancelConnTimeout() {
+        if (connTimeout != null) {
+            ui.removeCallbacks(connTimeout);
+            connTimeout = null;
+        }
+    }
+
+    private void retryLoad() {
+        String saved = prefs().getString(KEY_ORIGIN, null);
+        String cur = web.getUrl();
+        pageFailed = false;
+        if (cur != null && cur.startsWith("http")) {
+            web.reload();
+        } else if (saved != null) {
+            web.loadUrl(saved + "/");
+        } else {
+            showEmpty(true);
+            hideConn();
+        }
     }
 
     @Override
