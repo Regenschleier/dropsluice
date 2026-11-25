@@ -326,6 +326,19 @@
     }
   }
 
+  // 传大文件时把屏幕钉住：手机锁屏后系统会断网，20 GB 就白传了。
+  // 只有 App 的 WebView 里有这个桥，普通浏览器里是空操作。
+  let awake = false;
+  function setAwake(on) {
+    if (on === awake) return;
+    awake = on;
+    try {
+      window.DropSluiceNative && window.DropSluiceNative.keepAwake(on);
+    } catch {
+      // 没有桥就当不支持
+    }
+  }
+
   async function pollXfer() {
     if (document.visibilityState !== 'visible') return;
     try {
@@ -333,6 +346,7 @@
       if (!res.ok) return;
       const data = await res.json();
       renderXfer(data.transfers);
+      setAwake((data.transfers || []).some((t) => !t.done));
     } catch {
       // 断线/服务停了就静默，别打扰用户
     }

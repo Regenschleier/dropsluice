@@ -171,6 +171,8 @@ python verify/decode-panel-qr.py <svg>       # 面板二维码栅格化 + zxing 
 
 - 只做局域网，没有 TLS、没有公网穿透。外网要用自己套 VPN 或 Tailscale（见 `docs/remote-tailscale.md`）。
 - 大文件：单个文件下载没有上限；上传默认 32 GiB（`DROPSLUICE_MAX_UPLOAD_MB` 可调）；打包下载支持 zip64，单个文件与整包都能超过 4 GiB。
+- 传之前先看盘：上传前用 `fsp.statfs` 看目标目录所在盘还剩多少（留 64 MB 余量），不够就直接回 **507 `no_space`** 并在 `message` 里说还差多少，不接收这一个字节；分块上传在 `GET /api/upload/resume` 那一步就拦。
+- 传输期间不息屏：App 的 WebView 里注册了 `DropSluiceNative.keepAwake(bool)`，网页在 `/api/transfers` 看到还有没传完的条目就把它打开（`setKeepScreenOn`），传完自动放开。普通浏览器里没这个桥，是空操作。
 - 目录列表最多 3000 条，超出会标 `truncated`，靠手机页面上的筛选框缩小范围。
 - 面板的长相是用 `verify/panel-harness/`（真 `client.js` + 真 react + 假数据）截图核对的，**没有在真 DSH 页面里点开过**（DSH 网页需要启动令牌才能登录）；真机扫码也没有实测。截图见 `verify/shots/`。
 - 归属地的线上表现没测：面板上那台"公网设备"是假数据（`203.0.113.42` 是文档专用地址）；离线脚本只验过 `1.1.1.1` 能查到「澳大利亞 · Queensland · South Brisbane」。

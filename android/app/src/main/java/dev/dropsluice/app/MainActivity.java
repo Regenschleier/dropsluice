@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -80,6 +81,19 @@ public class MainActivity extends AppCompatActivity {
         return getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
+    /**
+     * 网页能调的桥。现在只有一个开关：传输期间把屏幕钉住。
+     * 手机自动锁屏后系统会掐掉 Wi-Fi，20 GB 传到一半就断了，所以传输时要拦住息屏。
+     */
+    private class NativeBridge {
+        @JavascriptInterface
+        public void keepAwake(final boolean on) {
+            runOnUiThread(() -> {
+                if (web != null) web.setKeepScreenOn(on);
+            });
+        }
+    }
+
     private void configureWebView() {
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -92,6 +106,9 @@ public class MainActivity extends AppCompatActivity {
         s.setTextZoom(100);
         // 让我们自己在电脑端的面板上认得出这是官方 App
         s.setUserAgentString(s.getUserAgentString() + " " + BuildConfig.UA_TAG);
+
+        // 传输时由网页把屏幕钉住（见 public/app.js 的 setAwake）：锁屏会断网，大文件就白传了
+        web.addJavascriptInterface(new NativeBridge(), "DropSluiceNative");
 
         CookieManager cm = CookieManager.getInstance();
         cm.setAcceptCookie(true);
