@@ -1,12 +1,12 @@
 # DropSluice · 手机取件
 
-## ⬇️ 直接下载（v1.0.10）
+## ⬇️ 直接下载（v1.0.11）
 
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
-| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.10.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.10.apk)** | ~3.3 MB |
-| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.10.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.10.exe)** | ~24 MB |
-| 不想安装、解压就用 | [DropSluice-1.0.10-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.10-portable.zip) | ~33 MB |
+| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.11.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.11.apk)** | ~3.3 MB |
+| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.11.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.11.exe)** | ~24 MB |
+| 不想安装、解压就用 | [DropSluice-1.0.11-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.11-portable.zip) | ~33 MB |
 
 > 上面每条都直接指向最新一版 Release 里的文件（`releases/latest/download/…`），点一下就开始下。
 > 仓库是私有的，链接对**已登录且被授权的账号**有效。
@@ -14,9 +14,9 @@
 > 校验用 SHA256（Release 正文里也贴了一份）：
 >
 > ```
-> 5E20A40ACCFD50C7EED58AF279291BB9776710FA867D00BC9ACDD470D337ED0D  DropSluice-1.0.10.apk
-> 79C922418FF1482F903AE4B875E78C75DF1691CA14CB9A9358E0BE5279BEE577  DropSluice-Setup-1.0.10.exe
-> B524309E0F1B0DB0DCB72EAE56EB1B370C79856C85B6FD2EB2AA5F0C45A978F2  DropSluice-1.0.10-portable.zip
+> 3E83418E5052403B229E7651820EABA5F2DFA516101B7983A521EAECEF7043E4  DropSluice-1.0.11.apk
+> 5F13EC3594C923A9A63F47806961CCF4DAE55EA1C1FFC656AA1AF4A5DEF41FB1  DropSluice-Setup-1.0.11.exe
+> E84A3A52F42F521AA7860F58EB6159F68AB7EE98BA08C2A3A67CB11B61A3EAC1  DropSluice-1.0.11-portable.zip
 > ```
 
 ---
@@ -334,7 +334,7 @@ node verify/exe-e2e.mjs --exe dist\DropSluice.exe --port 18903   # 18 项
 构建（Windows，需要 JDK 17+ 和 Android SDK）：
 
 ```powershell
-$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.10.10-hotspot'
+$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'
 $env:GRADLE_USER_HOME='<repo>\build\gradle-home'
 cd android
 ..\build\gradle-8.9\bin\gradle.bat :app:assembleRelease --no-daemon --console=plain
