@@ -37,6 +37,7 @@
     <string name="conn_timeout_body">等了 15 秒还没连上 %1$s。\n\n先看三件事：\n · 手机和电脑是不是同一个 Wi-Fi（不是的话，在电脑面板上用「不在同一个 Wi-Fi」那条地址，手机先装 Tailscale 并登录同一个账号）\n · 电脑上的 DropSluice 还在运行吗（面板上应该是「运行中」）\n · 电脑换过 Wi-Fi 或重启过？地址会变，回电脑上重新扫一次码最稳</string>
     <string name="conn_error_title">打不开这台电脑</string>
     <string name="conn_error_body">%1$s\n\n目标：%2$s\n\n检查：手机和电脑同一个 Wi-Fi（或两端都开了 Tailscale）？电脑上的 DropSluice 在运行吗？地址是不是换过了？</string>
+    <string name="conn_blank_body">连上了，但这页是空的：%1$s\n\n可能是电脑那边的服务刚起来还没准备好，也可能配对过期了。点「再试一次」，不行就回电脑上重新扫一次码。</string>
     <string name="conn_retry">再试一次</string>
     <string name="conn_switch">扫别的电脑 / 改地址</string>
     <string name="conn_paired_lost">连上了，但这台电脑不认这个 App 了（配对可能被解除）。回电脑上重新扫一次码就行。</string>

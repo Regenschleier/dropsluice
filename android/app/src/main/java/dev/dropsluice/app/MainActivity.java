@@ -97,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
             showEmpty(true);
         } else {
             showEmpty(false);
+            // 先把「正在连」盖上再去加载：WebView 从第一帧到页面真正画出来之间是白的，
+            // 用户看到的「白屏」多半就是这一段。
+            showConnecting(origin + "/");
             web.loadUrl(origin + "/");
         }
     }
@@ -128,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
         s.setTextZoom(100);
+        // 底色跟界面一致：哪怕页面还没画、或者画到一半，露出来的也是深色而不是白
+        web.setBackgroundColor(0xFF0B0D10);
         // 让我们自己在电脑端的面板上认得出这是官方 App
         s.setUserAgentString(s.getUserAgentString() + " " + BuildConfig.UA_TAG);
 
@@ -173,7 +178,28 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 CookieManager.getInstance().flush();
                 showEmpty(false);
-                if (!pageFailed) hideConn();
+                if (pageFailed) return;
+                hideConn();
+                // 页面加载「成功」但其实一片空白（脚本挂了、服务端回了空壳）也要说话
+                if (url == null || !url.startsWith("http")) return;
+                view.evaluateJavascript(
+                        "(function(){var b=document.body;var t=b?b.innerText:'';return (t&&t.trim().length)?1:0;})()",
+                        value -> {
+                            if ("0".equals(value)) {
+                                pageFailed = true;
+                                showConnError(getString(R.string.conn_error_title),
+                                        getString(R.string.conn_blank_body, url));
+                            }
+                        });
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                pageFailed = true;
+                showConnError(getString(R.string.conn_error_title),
+                        getString(R.string.conn_error_body, "网页进程被系统回收了",
+                                String.valueOf(web.getUrl())));
+                return true;
             }
 
             @Override
@@ -381,8 +407,10 @@ public class MainActivity extends AppCompatActivity {
         String cur = web.getUrl();
         pageFailed = false;
         if (cur != null && cur.startsWith("http")) {
+            showConnecting(cur);
             web.reload();
         } else if (saved != null) {
+            showConnecting(saved + "/");
             web.loadUrl(saved + "/");
         } else {
             showEmpty(true);
