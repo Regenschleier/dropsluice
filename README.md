@@ -1,12 +1,12 @@
 # DropSluice · 手机取件
 
-## ⬇️ 直接下载（v1.0.8）
+## ⬇️ 直接下载（v1.0.9）
 
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
-| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.8.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.8.apk)** | ~3.3 MB |
-| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.8.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.8.exe)** | ~24 MB |
-| 不想安装、解压就用 | [DropSluice-1.0.8-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.8-portable.zip) | ~33 MB |
+| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.9.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.9.apk)** | ~3.3 MB |
+| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.9.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.9.exe)** | ~24 MB |
+| 不想安装、解压就用 | [DropSluice-1.0.9-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.9-portable.zip) | ~33 MB |
 
 > 上面每条都直接指向最新一版 Release 里的文件（`releases/latest/download/…`），点一下就开始下。
 > 仓库是私有的，链接对**已登录且被授权的账号**有效。
@@ -14,9 +14,9 @@
 > 校验用 SHA256（Release 正文里也贴了一份）：
 >
 > ```
-> E3EC162DE0FB5ABDAF3B08044F5CA2557ABD356819EEB910DF7C277D602386FB  DropSluice-1.0.8.apk
-> 836454F8E09F9C6F21AF1B909C255B08CB03B4C36335B0999EDE32A1418EFD0C  DropSluice-Setup-1.0.8.exe
-> 27FFDEB73C11858D32F543C80DA44362B4A9758D26D6CCA505EA269918C0D7E4  DropSluice-1.0.8-portable.zip
+> EE42D1B66121A11F3BF76DBB1A04F8D23F6F0725BF145B88156DF2183B53D545  DropSluice-1.0.9.apk
+> 8F4494D71769217CAFE6CEDFC0011805D894C1C5AE2B591AA1F9F6832B5FD440  DropSluice-Setup-1.0.9.exe
+> FD8535E6BC8CC17AE590A7DD5BD04471444BB1571AA5A520576E337A13B8671C  DropSluice-1.0.9-portable.zip
 > ```
 
 ---
