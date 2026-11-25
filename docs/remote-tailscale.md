@@ -2,6 +2,7 @@
 
 > **先选路**：只想把文件传出去、对面那台手机不想装额外东西 → 用 **公网地址**（[remote-public.md](remote-public.md)，面板上点一下就行）。
 > 本文这条 Tailscale 的价值是：**地址固定**、**只有你自己的 Tailnet 能看见**、直连时更快；代价也很明确——**两端都要装并登录同一个账号**，否则连不进去。
+> **Tailscale 到底提供了哪些能力、DropSluice 用到了哪几条**：[tailscale-features.md](tailscale-features.md)。
 
 这一页只讲一件事：**手机不在家里那个 Wi-Fi 里**（开流量、在公司、在外面），怎么让它连上自己电脑上的 DropSluice。
 
