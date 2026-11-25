@@ -1,5 +1,21 @@
 # DropSluice · 手机取件
 
+## ⬇️ 直接下载（v1.0.1）
+
+| 我要… | 下载 | 大小 |
+| --- | --- | --- |
+| 在电脑上跑（单文件，双击即用） | **[DropSluice.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice.exe)** | ~90 MB |
+| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.1.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.1.apk)** | ~3.3 MB |
+| 想要安装向导 | [DropSluice-Setup-1.0.1.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.1.exe) | ~24 MB |
+| 不想安装、解压就用 | [DropSluice-1.0.1-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.1-portable.zip) | ~33 MB |
+| 核对下载是否完整 | [SHA256SUMS.txt](https://github.com/Regenschleier/dropsluice/releases/latest/download/SHA256SUMS.txt) | 1 KB |
+
+> 都在同一个 Release 里：[全部产物](https://github.com/Regenschleier/dropsluice/releases/latest)。
+> 仓库是私有的，链接对**已登录且被授权的账号**有效。
+> 当前 SHA256：exe `77A5162D…415C`、apk `7554D823…1A8`、setup `526B837D…7082`、zip `A6FACD32…341E`（完整值见 `SHA256SUMS.txt`）。
+
+---
+
 在自己电脑上开一个小服务，手机连同一个 Wi-Fi，扫一次二维码，就能：
 
 - 浏览这台电脑的**整块磁盘**（C:、D:、桌面、下载、文档、图片、视频…）
