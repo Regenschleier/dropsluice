@@ -4,15 +4,20 @@
 
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
-| 在电脑上跑（单文件，双击即用） | **[DropSluice.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice.exe)** | ~90 MB |
 | 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.6.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.6.apk)** | ~3.3 MB |
-| 想要安装向导 | [DropSluice-Setup-1.0.6.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.6.exe) | ~24 MB |
+| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.6.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.6.exe)** | ~24 MB |
 | 不想安装、解压就用 | [DropSluice-1.0.6-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.6-portable.zip) | ~33 MB |
-| 核对下载是否完整 | [SHA256SUMS.txt](https://github.com/Regenschleier/dropsluice/releases/latest/download/SHA256SUMS.txt) | 1 KB |
 
 > 上面每条都直接指向最新一版 Release 里的文件（`releases/latest/download/…`），点一下就开始下。
 > 仓库是私有的，链接对**已登录且被授权的账号**有效。
-> 当前 SHA256：exe `D94986AF…B2E9`、apk `8A623BBA…F846`、setup `60CBF540…4FBC`、zip `52C724A3…E35D`（完整值见 `SHA256SUMS.txt`）。
+> **不再单独发布 90 MB 的单文件 exe**：安装包和绿色包里装的就是同一个程序，只是外面多了安装向导 / 压缩包这层壳。
+> 校验用 SHA256（Release 正文里也贴了一份）：
+>
+> ```
+> 8A623BBAAD38B0F36EB65C6626E063C6950603F9663F898EB2457ABC849BF846  DropSluice-1.0.6.apk
+> 60CBF540FBFF08B718001BABDB9DC0E17C53664C9262D5EA25EABCB5CB2B4FBC  DropSluice-Setup-1.0.6.exe
+> 52C724A3B124C74C23F693D87AB2AC5D27BBAB03E0C370CF40F4181A67FEE35D  DropSluice-1.0.6-portable.zip
+> ```
 
 ---
 
