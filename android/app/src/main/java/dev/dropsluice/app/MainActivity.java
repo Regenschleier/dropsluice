@@ -354,6 +354,8 @@ public class MainActivity extends AppCompatActivity {
         prefs().edit().putString(KEY_ORIGIN, origin).apply();
     }
 
+    /** 手势返回 / 返回键：先按网页历史回上一层目录，到根了才退出。 */
+
     private void showEmpty(boolean show) {
         emptyState.setVisibility(show ? View.VISIBLE : View.GONE);
         webContainer.setVisibility(show ? View.GONE : View.VISIBLE);
@@ -457,19 +459,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /** 返回键：能回退就回退，退到头弹菜单（换电脑 / 清配对 / 退出） */
+    /** 返回键：盖着提示就先收起提示；能回退就回退；退到头弹菜单（换电脑 / 清配对 / 退出） */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && web != null && web.canGoBack()
-                && webContainer.getVisibility() == View.VISIBLE) {
+        if (keyCode != KeyEvent.KEYCODE_BACK) return super.onKeyDown(keyCode, event);
+        if (connOverlay.getVisibility() == View.VISIBLE && btnRetry.getVisibility() == View.VISIBLE) {
+            hideConn();
+            return true;
+        }
+        if (web != null && web.canGoBack() && webContainer.getVisibility() == View.VISIBLE) {
             web.goBack();
             return true;
         }
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            showExitSheet();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
+        showExitSheet();
+        return true;
     }
 
     private void showExitSheet() {

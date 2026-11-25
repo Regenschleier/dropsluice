@@ -130,7 +130,8 @@
     return parent;
   }
 
-  async function load(path) {
+  async function load(path, opts = {}) {
+    const push = opts.push !== false;
     setStatus('加载中…');
     try {
       const data = await api(`/api/list?path=${encodeURIComponent(path)}`);
@@ -142,13 +143,18 @@
       rootsBox.classList.add('hidden');
       setStatus(data.truncated ? '文件太多，只显示前 3000 项' : '');
       $('zipBtn').disabled = false;
+      // 记一条历史：安卓的手势返回 / 返回键走的是 WebView 的历史，
+      // 不记的话一划就直接退出 App。
+      if (push) history.pushState({ path: cwd }, '', `#${encodeURIComponent(cwd)}`);
+      else history.replaceState({ path: cwd }, '', `#${encodeURIComponent(cwd)}`);
       window.scrollTo({ top: 0 });
     } catch (err) {
       setStatus(`打不开：${err.message}`, true);
     }
   }
 
-  async function showRoots() {
+  async function showRoots(opts = {}) {
+    const push = opts.push === true;
     setStatus('加载中…');
     try {
       const data = rootsData ?? (rootsData = await api('/api/roots'));
@@ -159,6 +165,8 @@
       rootsBox.textContent = '';
       rootsBox.classList.remove('hidden');
       cwd = null;
+      if (push) history.pushState({ path: null }, '', '#');
+      else if (opts.replace !== false) history.replaceState({ path: null }, '', '#');
 
       const title = document.createElement('span');
       title.className = 'title';
@@ -191,7 +199,14 @@
   }
 
   $('home').onclick = () => showRoots();
-  $('refresh').onclick = () => (cwd ? load(cwd) : showRoots());
+  $('refresh').onclick = () => (cwd ? load(cwd, { push: false }) : showRoots());
+
+  // 安卓手势返回：WebView 回退到上一条历史，我们把它翻译成「回上一层目录」。
+  window.addEventListener('popstate', (ev) => {
+    const st = ev.state;
+    if (st && st.path) load(st.path, { push: false });
+    else showRoots({ push: false, replace: false });
+  });
   filterInput.oninput = renderList;
 
   $('zipBtn').onclick = () => {
@@ -355,6 +370,8 @@
   pollXfer();
   setInterval(pollXfer, 900);
 
-  // 首次进入
-  showRoots();
+  // 首次进入：地址里带着 #<目录> 就回到那一层（刷新/被系统杀掉再回来都不丢位置）
+  const startPath = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+  if (startPath) load(startPath, { push: false });
+  else showRoots({ replace: false });
 })();
