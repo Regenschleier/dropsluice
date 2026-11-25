@@ -125,8 +125,9 @@
 ## 自测
 
 ```powershell
-node verify/e2e.mjs                          # 23 项端到端（自己起临时端口的服务）
+node verify/e2e.mjs                          # 24 项端到端（自己起临时端口的服务）
 node verify/exe-e2e.mjs                      # 18 项对 dist/DropSluice.exe 的端到端
+node verify/security.mjs --dist               # 12 项安全自检（本机痕迹 / 受控清单 / 成品二进制）
 node verify/device-info.mjs                  # 30 项设备信息（UA / 内网判定 / 清单字段 / 归属地）
 node verify/all.mjs; python verify/all.py    # 二维码 128 格逐格比对
 node verify/terminal-qr.mjs                  # 终端二维码画法回归

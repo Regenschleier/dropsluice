@@ -16,7 +16,10 @@
 ; 告诉用户怎么手动放行（netsh 一行命令）。
 
 #define MyAppName "DropSluice"
-#define MyAppVersion "1.0.1"
+; 版本号默认值；release.mjs 会用 ISCC 的 /DMyAppVersion=… 覆盖，保持和 scripts/version.mjs 一致
+#ifndef MyAppVersion
+  #define MyAppVersion "1.0.1"
+#endif
 #define MyAppPublisher "DropSluice"
 #define MyAppExeName "DropSluice.exe"
 #define MyFirewallRule "DropSluice"

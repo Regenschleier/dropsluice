@@ -70,7 +70,7 @@ const BASE = process.argv[2] ?? (await (async () => {
   for (let attempt = 0; attempt < 12 && !inst; attempt++) {
     const port = 19100 + Math.floor(Math.random() * 800);
     try {
-      inst = await startDropSluice({ port, host: '127.0.0.1', openPairing: true });
+      inst = await startDropSluice({ port, host: '127.0.0.1', openPairing: true, maxUploadBytes: 1024 });
     } catch (err) {
       if (err?.code !== 'EADDRINUSE') throw err;
     }
@@ -342,6 +342,21 @@ await check('重名自动改名（不覆盖）', async () => {
   const first = await readFile(path.join(tmp, '上传件 带空格.txt'));
   assert(first.toString() === '上传回来的内容\n第二行 🚀', '原文件被覆盖了');
   return d.name;
+});
+await check('超过上限的上传被 413 挡下，且不留半截文件', async () => {
+  const big = Buffer.alloc(4096, 7); // 服务在测试里把上限设成 1 KiB
+  const r = await req(`/api/upload?path=${encodeURIComponent(tmp)}`, {
+    method: 'POST',
+    headers: { 'x-file-name': encodeURIComponent('太大了.bin'), 'content-type': 'application/octet-stream' },
+    body: big,
+  });
+  assert(r.status === 413, `期望 413，实际 ${r.status}`);
+  const d = await r.json();
+  assert(d.error === 'too_large', `error 字段不对：${d.error}`);
+  let left = false;
+  try { await stat(path.join(tmp, '太大了.bin')); left = true; } catch {}
+  assert(!left, '拒绝后还留下了半截文件');
+  return `limit=${d.limit}`;
 });
 
 // ---------- 7. 解除配对 ----------

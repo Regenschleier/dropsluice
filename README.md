@@ -142,16 +142,20 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 - **没有加密传输**：局域网内是 http。同一 Wi-Fi 下懂行的人可以用 ARP 欺骗之类的手段看流量。家里/自己热点没问题，公共 Wi-Fi 别开。
 - **不暴露到公网**：这个服务没有做反向代理/端口映射的安全加固，别直接映射到公网。真要从外网用，套一层 VPN（WireGuard/Tailscale 之类）比暴露端口安全得多。
 - **它能读整块磁盘**：这是设计目标（你要的就是"随意调用电脑文件"），但也意味着**拿到令牌的那台手机能读你所有盘**。别把二维码给别人扫，别把令牌抄给别的设备。
+- **上传有上限**：单次上传默认最多 4 GiB（`DROPSLUICE_MAX_UPLOAD_MB=2048` 可改），超了直接 413 并且**不留半截文件**——不会因为一个超大请求把磁盘写满。JSON 请求体上限 1 MiB。
+- **成品里没有本机痕迹**：`verify/security.mjs --dist` 会扫 exe 和 apk 的二进制，确认里面没有本机用户名、目录、真实内网 IP 或 token。
 
 ---
 
 ## 5. 自测怎么跑（想确认「真的没压缩」）
 
 ```bash
-node verify/e2e.mjs          # 端到端 23 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、解除
+node verify/e2e.mjs          # 端到端 24 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、超限 413、解除
 node verify/device-info.mjs  # 设备信息 30 项：UA 解析、内网判定、IP/网卡/Wi-Fi/型号、归属地
 node verify/terminal-qr.mjs  # 终端二维码 5 项（矩阵 → 半块字符 → 反推矩阵逐格一致）
 node verify/exe-e2e.mjs      # 打包版 exe 18 项（需要先构建，见 §6.1）
+node verify/security.mjs     # 安全自检 10 项：本机痕迹/口令/私钥、受控文件清单、安全实现
+node verify/security.mjs --dist   # 再加 2 项：扫 dist/ 里的 exe 和 apk 有没有内嵌本机路径
 ```
 
 `e2e.mjs` 不传 `--base-url` 时会**自己起一个一次性服务**（随机端口 19100+、数据目录在临时目录），不会碰你正在用的 `.data`。
@@ -178,11 +182,25 @@ python verify/decode-panel-qr.py               # 把面板上的二维码 SVG �
 
 exe 是**单文件**：Node 官方 SEA（Single Executable Application）把 `outfile + node.exe` 缝在一起，`public/`、`desktop/` 里的 6 个文件作为 assets 内嵌，双击即用，目标机器**不需要装 Node**。
 
-构建（Windows）：
+构建（Windows），**一条命令出全部产物**：
 
 ```powershell
-cd <repo>
-npm --prefix build/tools install            # esbuild + postject + rcedit（一次性）
+node scripts/release.mjs          # exe → APK → 安装包 → 绿色包 → SHA256SUMS，约 45 秒
+```
+
+只重做其中一步：
+
+```powershell
+node scripts/release.mjs --skip=apk,setup,zip    # 只重打 exe（改完 exe 相关代码时）
+node scripts/release.mjs --skip=exe,setup,zip    # 只重打 APK
+node scripts/release.mjs --clean                 # 先清 dist/ 再全量
+```
+
+版本号只有一处：`scripts/version.mjs` 里的 `VERSION`。它同时喂给 exe 的资源版本、安装包文件名、APK 文件名和 SHA256SUMS；改版本只改这一个文件（安卓侧的 `versionName` 会被核对，不一致会警告）。
+
+想手动分步做也行：
+
+```powershell
 node scripts/build-desktop.mjs              # → dist/DropSluice.exe
 node verify/exe-e2e.mjs --exe dist\DropSluice.exe --port 18903
 ```
@@ -269,9 +287,10 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 **已验证（都有脚本或命令可复跑）：**
 
 - 二维码编码器：16 段测试串 × 8 种掩码 = **128 个矩阵与 python-qrcode 逐格完全一致**；zxing 能把每种掩码都解码回原文；终端半块字符版 5 项回归全过。
-- 服务端 e2e **23 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、解除后旧令牌 401。
+- 服务端 e2e **24 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、解除后旧令牌 401。
 - 设备信息 **30 项**：UA→「iPhone · iOS 18.1 · Safari」、公网/内网判定（`172.16` 内网但 `172.32` 公网）、IP/网卡/Wi-Fi 名落库、`1.1.1.1` 真查到「澳大利亞 · Queensland · South Brisbane · Cloudflare」且第二次走缓存。
 - 打包版 exe **18 项**：面板 200、二维码 SVG、配对、下载 SHA256、**伪造 Host → 403 / 本机 Host → 200**（只允许本机）、解除后 401。
+- 安全自检 **12 项**（`verify/security.mjs --dist`）：受控文件里没有本机绝对路径/用户名/真实内网 IP/token/私钥/明文口令；受控清单里没有 `dist/`、`.data/`、`*.jks`、`*.apk/.exe/.zip`、token 缓存；HttpOnly/SameSite/上传上限/413/配对限速/JSON 上限/`no-store, no-transform`/本机 Host 校验都在；**成品 exe 与 apk 的二进制里没有 `C:\Users\<你>`、`10.17.`、`github_pat_`**。
 - 绿色包：解压后对解压出来的 exe 跑同一套 18 项，全过；`cmd /c start` 双击模拟 5 秒后进程仍存活。
 - APK：`apksigner verify` 通过、`aapt2 dump badging` 的包名/版本/权限/SDK 都对。
 - 插件形态：`plugin_manager` 安装返回 `applied`；`phone_drop` 工具能 start/status/pair/devices/revoke/stop；dock 槽位里能看到 `{id:'phone-drop', order:6}` 的注册。

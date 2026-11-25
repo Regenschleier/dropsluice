@@ -14,6 +14,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { VERSION } from './version.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -62,11 +63,13 @@ const assets = {};
 for (const [key, rel] of Object.entries(ASSETS)) {
   const abs = path.join(ROOT, rel);
   if (!fs.existsSync(abs)) throw new Error(`缺静态文件：${rel}`);
-  assets[key] = abs;
+  // 写相对路径（相对仓库根）：Node 会把配置原样嵌进 blob，
+  // 写绝对路径的话成品 exe 里会留下 C:\Users\<你>\... 这种本机痕迹。
+  assets[key] = rel;
 }
 const seaConfig = {
-  main: path.join(BUILD, 'dropsluice.cjs'),
-  output: path.join(BUILD, 'dropsluice.blob'),
+  main: path.join('build', 'sea', 'dropsluice.cjs'),
+  output: path.join('build', 'sea', 'dropsluice.blob'),
   disableExperimentalSEAWarning: true,
   useSnapshot: false,
   useCodeCache: false,
@@ -93,8 +96,8 @@ if (fs.existsSync(rceditExe) && fs.existsSync(ico)) {
   const args = [
     exePath,
     '--set-icon', ico,
-    '--set-file-version', '1.0.1.0',
-    '--set-product-version', '1.0.1.0',
+    '--set-file-version', `${VERSION}.0`,
+    '--set-product-version', `${VERSION}.0`,
     '--set-version-string', 'CompanyName', 'DropSluice',
     '--set-version-string', 'FileDescription', 'DropSluice - 手机传文件',
     '--set-version-string', 'ProductName', 'DropSluice',
