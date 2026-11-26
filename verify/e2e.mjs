@@ -694,6 +694,38 @@ await check('inline=1 时是 inline 而不是 attachment（PDF 才能内嵌渲�
   return 'attachment → inline';
 });
 
+// ---------- 11. 电脑给手机传文件（收件箱） ----------
+console.log('11) 电脑发过来的文件');
+await check('面板发文件 → 手机能在收件箱看到、能删', async () => {
+  const body = 'hello from panel ' + Date.now();
+  const send = await fetch(`${BASE}/api/admin/send`, {
+    method: 'POST',
+    headers: { 'x-filename': encodeURIComponent('面板发来的.txt') },
+    body,
+  });
+  const sent = await send.json();
+  assert(send.status === 200, `发送失败 ${send.status} ${JSON.stringify(sent)}`);
+  assert(sent.name === '面板发来的.txt', `落盘名字不对：${sent.name}`);
+
+  const list = await req('/api/inbox');
+  assert(list.status === 200, `收件箱 ${list.status}`);
+  const data = await list.json();
+  const hit = data.entries.find((e) => e.name === '面板发来的.txt');
+  assert(hit, `手机看不到这条：${JSON.stringify(data.entries)}`);
+  assert(hit.size === Buffer.byteLength(body), `大小不对：${hit.size}`);
+  assert(hit.path && hit.path.includes('inbox'), '缺绝对路径（手机预览要用它）');
+
+  const dl = await req(`/api/download?path=${encodeURIComponent(hit.path)}`);
+  assert(dl.status === 200, `下载收件箱文件 ${dl.status}`);
+  assert((await dl.text()) === body, '内容不一致');
+
+  const delRes = await req(`/api/inbox?name=${encodeURIComponent('面板发来的.txt')}`, { method: 'DELETE' });
+  assert(delRes.status === 200, `删除 ${delRes.status}`);
+  const after = await (await req('/api/inbox')).json();
+  assert(!after.entries.some((e) => e.name === '面板发来的.txt'), '删了还在');
+  return `${hit.size} B，删得掉`;
+});
+
 // ---------- 汇总 ----------
 await rm(tmp, { recursive: true, force: true });
 await globalThis.__cleanup?.();

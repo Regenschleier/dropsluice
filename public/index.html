@@ -17,8 +17,23 @@
 
 <main>
   <div id="roots" class="roots hidden"></div>
+  <section id="inboxCard" class="card hidden">
+    <div class="card-head">
+      <h2>电脑发来的文件</h2>
+      <button id="inboxClear" class="mini">清空</button>
+    </div>
+    <p class="hint">电脑面板上点「给手机传文件」发过来的，点一下直接预览或下载。</p>
+    <ul id="inboxList" class="list compact"></ul>
+  </section>
   <div id="filterWrap" class="filter hidden">
     <input id="filter" type="search" placeholder="在当前文件夹里筛选…" autocomplete="off">
+  </div>
+  <div id="sortBar" class="sortbar hidden">
+    <span class="sortlabel">排序</span>
+    <button class="sortbtn" data-key="name">名称</button>
+    <button class="sortbtn" data-key="mtime">时间</button>
+    <button class="sortbtn" data-key="size">大小</button>
+    <button id="sortDir" class="sortbtn dir" title="切换升降序">↑</button>
   </div>
   <ul id="list" class="list"></ul>
   <div id="empty" class="empty hidden"></div>

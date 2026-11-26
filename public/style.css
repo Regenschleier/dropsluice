@@ -339,3 +339,45 @@ main .card:first-of-type { margin-top: 8px; }
 .row .row-sub { color: var(--fg-dim); font-size: 12px; margin-top: 2px; }
 .empty.small { padding: 14px 6px; font-size: 13px; }
 button.ghost.wide { width: 100%; margin-top: 10px; }
+
+/* ---------- 收件箱与排序（1.0.17） ---------- */
+.card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card-head h2 { margin: 0; }
+button.mini {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg-dim);
+  border-radius: 10px;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1;
+}
+button.mini:active { background: rgba(255,255,255,.06); }
+#inboxList li { display: flex; align-items: center; gap: 8px; }
+#inboxList .row { flex: 1 1 auto; min-width: 0; }
+.sortbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 2px 10px;
+  color: var(--fg-dim);
+  font-size: 13px;
+}
+.sortbar .sortlabel { margin-right: 2px; }
+button.sortbtn {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg-dim);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  line-height: 1;
+}
+button.sortbtn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.sortbtn.dir { padding: 5px 9px; margin-left: auto; }
+.row .meta { white-space: nowrap; }
+/* 收件箱里的按钮别再被 .card button 的 width:100% 撑满 */
+.card-head button.mini,
+#inboxList button.mini,
+#inboxList button.mini:active { width: auto; flex: 0 0 auto; }
+.card-head h2 { flex: 1 1 auto; min-width: 0; }

@@ -8,12 +8,28 @@
   const emptyBox = $('empty');
   const filterInput = $('filter');
   const filterWrap = $('filterWrap');
+  const sortBar = $('sortBar');
+  const sortDirBtn = $('sortDir');
+  const inboxCard = $('inboxCard');
+  const inboxList = $('inboxList');
 
   let cwd = null;          // 当前目录（绝对路径）
   let entries = [];        // 当前目录内容
   let selecting = false;   // 多选模式（长按文件/文件夹进入）
   const selected = new Set(); // 选中的绝对路径
   let rootsData = null;
+
+  // 排序：默认按名称升序；手机记不住偏好会烦人，所以存 localStorage
+  let sortKey = 'name';
+  let sortAsc = true;
+  try {
+    const saved = JSON.parse(localStorage.getItem('ds.sort') || '{}');
+    if (saved.key) sortKey = saved.key;
+    if (typeof saved.asc === 'boolean') sortAsc = saved.asc;
+  } catch { /* 无所谓，用默认值 */ }
+  const saveSort = () => {
+    try { localStorage.setItem('ds.sort', JSON.stringify({ key: sortKey, asc: sortAsc })); } catch { /* 隐私模式下写不进去 */ }
+  };
 
   // 能直接在预览页看的格式（其它格式照旧走下载）
   const PREVIEWABLE = /\.(jpe?g|png|gif|webp|bmp|avif|svg|heic|heif|pdf|txt|md|json|log|csv|ini|ya?ml|xml|html|css|js|mjs|ts|docx?|xlsx?|pptx?)$/i;
@@ -100,8 +116,25 @@
   function renderList() {
     list.textContent = '';
     const q = filterInput.value.trim().toLowerCase();
-    const shown = q ? entries.filter((e) => e.name.toLowerCase().includes(q)) : entries;
+    const shown = q ? entries.filter((e) => e.name.toLowerCase().includes(q)) : entries.slice();
+
+    // 目录永远排在前面，目录内部再按所选键排
+    const cmp = (a, b) => {
+      if (sortKey === 'mtime') return (a.mtime || 0) - (b.mtime || 0);
+      if (sortKey === 'size') return (a.size || 0) - (b.size || 0);
+      return a.name.localeCompare(b.name, 'zh', { numeric: true, sensitivity: 'base' });
+    };
+    shown.sort((a, b) => {
+      const dirDiff = (b.type === 'dir') - (a.type === 'dir');
+      if (dirDiff) return dirDiff;
+      return sortAsc ? cmp(a, b) : -cmp(a, b);
+    });
+
     emptyBox.classList.toggle('hidden', shown.length > 0);
+    for (const btn of sortBar.querySelectorAll('.sortbtn[data-key]')) {
+      btn.classList.toggle('on', btn.dataset.key === sortKey);
+    }
+    sortDirBtn.textContent = sortAsc ? '↑' : '↓';
 
     for (const e of shown) {
       const li = document.createElement('li');
@@ -119,7 +152,10 @@
       }
       a.innerHTML = `<span class="ico">${iconFor(e)}</span><span class="name"></span><span class="meta"></span>`;
       a.querySelector('.name').textContent = e.name;
-      a.querySelector('.meta').textContent = e.type === 'dir' ? '' : fmtSize(e.size);
+      const meta = e.type === 'dir'
+        ? (e.mtime ? fmtTime(e.mtime) : '')
+        : [fmtSize(e.size), e.mtime ? fmtTime(e.mtime) : ''].filter(Boolean).join(' · ');
+      a.querySelector('.meta').textContent = meta;
 
       a.dataset.path = full;
       a.innerHTML += '<span class="check" aria-hidden="true"></span>';
@@ -208,6 +244,8 @@
       renderCrumbs();
       renderList();
       filterWrap.classList.toggle('hidden', entries.length < 12);
+      sortBar.classList.toggle('hidden', entries.length === 0);
+      inboxCard.classList.add('hidden');
       rootsBox.classList.add('hidden');
       setStatus(data.truncated ? '文件太多，只显示前 3000 项' : '');
       $('zipBtn').disabled = false;
@@ -229,6 +267,8 @@
       list.textContent = '';
       emptyBox.classList.add('hidden');
       filterWrap.classList.add('hidden');
+      sortBar.classList.add('hidden');
+      loadInbox();
       crumbs.textContent = '';
       rootsBox.textContent = '';
       rootsBox.classList.remove('hidden');
@@ -443,6 +483,70 @@
       // 断线/服务停了就静默，别打扰用户
     }
   }
+
+  /* ---------- 电脑发来的文件（收件箱） ---------- */
+  async function loadInbox() {
+    let data;
+    try {
+      data = await api('/api/inbox');
+    } catch {
+      inboxCard.classList.add('hidden');
+      return;
+    }
+    const list0 = (data.entries || []);
+    inboxCard.classList.toggle('hidden', list0.length === 0);
+    inboxList.textContent = '';
+    for (const it of list0) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.className = 'row';
+      if (PREVIEWABLE.test(it.name)) {
+        a.href = `/preview?path=${encodeURIComponent(it.path)}`;
+      } else {
+        a.href = `/api/download?path=${encodeURIComponent(it.path)}`;
+        a.setAttribute('download', it.name);
+      }
+      a.innerHTML = '<span class="ico">📥</span><span class="name"></span><span class="meta"></span>';
+      a.querySelector('.name').textContent = it.name;
+      a.querySelector('.meta').textContent = [fmtSize(it.size), fmtTime(it.mtime)].filter(Boolean).join(' · ');
+      li.append(a);
+      const del = document.createElement('button');
+      del.className = 'mini';
+      del.textContent = '移除';
+      del.onclick = async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        try {
+          await fetch(`/api/inbox?name=${encodeURIComponent(it.name)}`, { method: 'DELETE', credentials: 'same-origin' });
+        } catch { /* 忽略：下次刷新再说 */ }
+        loadInbox();
+      };
+      li.append(del);
+      inboxList.append(li);
+    }
+  }
+
+  $('inboxClear').onclick = async () => {
+    const ok = window.confirm('清空「电脑发来的文件」？只删收件箱里的副本，电脑原文件不动。');
+    if (!ok) return;
+    try {
+      await fetch('/api/inbox', { method: 'DELETE', credentials: 'same-origin' });
+    } catch { /* 忽略 */ }
+    loadInbox();
+  };
+
+  for (const btn of sortBar.querySelectorAll('.sortbtn[data-key]')) {
+    btn.onclick = () => {
+      sortKey = btn.dataset.key;
+      saveSort();
+      renderList();
+    };
+  }
+  sortDirBtn.onclick = () => {
+    sortAsc = !sortAsc;
+    saveSort();
+    renderList();
+  };
 
   pollXfer();
   setInterval(pollXfer, 900);
