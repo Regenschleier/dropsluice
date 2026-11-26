@@ -41,4 +41,5 @@
     <string name="conn_retry">再试一次</string>
     <string name="conn_switch">扫别的电脑 / 改地址</string>
     <string name="conn_paired_lost">连上了，但这台电脑不认这个 App 了（配对可能被解除）。回电脑上重新扫一次码就行。</string>
+    <string name="no_app_for_file">这台手机没有能打开这个文件的应用</string>
 </resources>

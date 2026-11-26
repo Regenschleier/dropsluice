@@ -6,7 +6,9 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -35,6 +37,9 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * DropSluice 的手机端外壳。
@@ -117,6 +122,68 @@ public class MainActivity extends AppCompatActivity {
         public void keepAwake(final boolean on) {
             runOnUiThread(() -> {
                 if (web != null) web.setKeepScreenOn(on);
+            });
+        }
+
+        /** 手机「下载」目录里最近下完的文件（下载页用），JSON 数组字符串。 */
+        @JavascriptInterface
+        public String listDownloads() {
+            JSONArray out = new JSONArray();
+            DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            if (dm == null) return out.toString();
+            DownloadManager.Query q = new DownloadManager.Query();
+            q.setFilterByStatus(DownloadManager.STATUS_SUCCESSFUL);
+            Cursor c = null;
+            try {
+                c = dm.query(q);
+                int idCol = c.getColumnIndex(DownloadManager.COLUMN_ID);
+                int nameCol = c.getColumnIndex(DownloadManager.COLUMN_TITLE);
+                int sizeCol = c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                int doneCol = c.getColumnIndex(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP);
+                while (c.moveToNext() && out.length() < 100) {
+                    JSONObject o = new JSONObject();
+                    o.put("id", c.getLong(idCol));
+                    o.put("name", c.getString(nameCol));
+                    o.put("size", c.getLong(sizeCol));
+                    o.put("at", c.getLong(doneCol));
+                    out.put(o);
+                }
+            } catch (Exception ignored) {
+                // 拿不到就返回已经凑出来的那部分，页面上显示「没有下载记录」也不影响别的功能
+            } finally {
+                if (c != null) c.close();
+            }
+            return out.toString();
+        }
+
+        /** 用系统能打开这个类型的应用打开某个已下载的文件。 */
+        @JavascriptInterface
+        public boolean openDownload(final long id) {
+            DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+            if (dm == null) return false;
+            Uri uri = dm.getUriForDownloadedFile(id);
+            if (uri == null) return false;
+            try {
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setDataAndType(uri, dm.getMimeTypeForDownloadedFile(id));
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(i);
+                return true;
+            } catch (ActivityNotFoundException e) {
+                Toast.makeText(MainActivity.this, R.string.no_app_for_file, Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+
+        /** 打开系统的「下载」列表，让用户自己翻。 */
+        @JavascriptInterface
+        public void openDownloadsFolder() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS));
+                } catch (ActivityNotFoundException e) {
+                    Toast.makeText(MainActivity.this, R.string.no_app_for_file, Toast.LENGTH_LONG).show();
+                }
             });
         }
     }

@@ -29,6 +29,8 @@ const ASSETS = {
   'pair.html': 'public/pair.html',
   'pair.js': 'public/pair.js',
   'need-app.html': 'public/need-app.html',
+  'downloads.html': 'public/downloads.html',
+  'downloads.js': 'public/downloads.js',
   'desktop.html': 'desktop/desktop.html',
 };
 

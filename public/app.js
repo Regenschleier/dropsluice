@@ -11,6 +11,8 @@
 
   let cwd = null;          // 当前目录（绝对路径）
   let entries = [];        // 当前目录内容
+  let selecting = false;   // 多选模式（长按文件/文件夹进入）
+  const selected = new Set(); // 选中的绝对路径
   let rootsData = null;
 
   const fmtSize = (n) => {
@@ -109,9 +111,67 @@
       a.innerHTML = `<span class="ico">${iconFor(e)}</span><span class="name"></span><span class="meta"></span>`;
       a.querySelector('.name').textContent = e.name;
       a.querySelector('.meta').textContent = e.type === 'dir' ? '' : fmtSize(e.size);
+
+      const full = joinPath(cwd, e.name);
+      a.dataset.path = full;
+      a.innerHTML += '<span class="check" aria-hidden="true"></span>';
+      attachSelect(a, full);
+      if (selected.has(full)) a.classList.add('selected');
       li.append(a);
       list.append(li);
     }
+    renderSelBar();
+  }
+
+  /* ---------- 多选：长按进入，选中的一起打包下载 ---------- */
+  function attachSelect(el, full) {
+    let timer = null;
+    let moved = false;
+
+    el.addEventListener('pointerdown', (ev) => {
+      moved = false;
+      timer = setTimeout(() => {
+        if (moved) return;
+        if (!selecting) setSelecting(true);
+        toggleSelected(full);
+        if (navigator.vibrate) navigator.vibrate(10);
+      }, 450);
+      void ev;
+    });
+    el.addEventListener('pointermove', () => { moved = true; });
+    el.addEventListener('pointerup', () => clearTimeout(timer));
+    el.addEventListener('pointercancel', () => clearTimeout(timer));
+
+    el.addEventListener('click', (ev) => {
+      if (!selecting) return;         // 正常模式：照原来的行为（进目录 / 下载）
+      ev.preventDefault();
+      ev.stopPropagation();
+      toggleSelected(full);
+    }, true);
+  }
+
+  function setSelecting(on) {
+    selecting = on;
+    if (!on) selected.clear();
+    $('selBar').classList.toggle('hidden', !on);
+    document.body.classList.toggle('selecting', on);
+    renderList();
+  }
+
+  function toggleSelected(full) {
+    if (selected.has(full)) selected.delete(full);
+    else selected.add(full);
+    if (selected.size === 0 && selecting) return setSelecting(false);
+    renderSelBar();
+    for (const el of list.querySelectorAll('.row')) {
+      el.classList.toggle('selected', selected.has(el.dataset.path));
+    }
+  }
+
+  function renderSelBar() {
+    if (!selecting) return;
+    $('selCount').textContent = `已选 ${selected.size} 项`;
+    $('selDownload').disabled = selected.size === 0;
   }
 
   function joinPath(a, b) {
@@ -212,6 +272,15 @@
   $('zipBtn').onclick = () => {
     if (!cwd) return;
     location.href = `/api/zip?path=${encodeURIComponent(cwd)}`;
+  };
+
+  $('selCancel').onclick = () => setSelecting(false);
+
+  $('selDownload').onclick = () => {
+    if (selected.size === 0) return;
+    const qs = [...selected].map((p) => `p=${encodeURIComponent(p)}`).join('&');
+    location.href = `/api/download-many?${qs}`;
+    setSelecting(false);
   };
 
   // 大文件走分块断点续传：断了、切后台、换网络，重新问一次断点就能接着传。

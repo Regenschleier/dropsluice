@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<title>DropSluice · 下载</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="bar">
+  <a id="back" class="icon" href="/" title="回到文件列表" aria-label="回到文件列表">‹</a>
+  <div class="crumbs"><strong>下载</strong></div>
+  <button id="refresh" class="icon" title="刷新">⟳</button>
+</header>
+
+<main>
+  <section class="card">
+    <h2>正在下载</h2>
+    <p class="hint">传完之后这里会清空，记录留在下面。</p>
+    <ul id="active" class="list compact"></ul>
+    <div id="activeEmpty" class="empty small">现在没有正在传的文件</div>
+  </section>
+
+  <section class="card">
+    <h2>手机里已下载的文件</h2>
+    <p class="hint">App 把文件存进系统的「下载」目录，点条目就能用别的应用打开。</p>
+    <ul id="local" class="list compact"></ul>
+    <div id="localEmpty" class="empty small">还没下过文件</div>
+    <button id="openFolder" class="ghost wide">打开系统的下载列表</button>
+    <p id="localHint" class="hint hidden"></p>
+  </section>
+
+  <section class="card">
+    <h2>传输记录</h2>
+    <p class="hint">这台电脑记下的最近 200 条（下载 / 上传 / 打包下载）。</p>
+    <ul id="history" class="list compact"></ul>
+    <div id="historyEmpty" class="empty small">还没有记录</div>
+  </section>
+</main>
+
+<div id="xfer" class="xfer hidden"></div>
+<script src="/downloads.js"></script>
+</body>
+</html>

@@ -317,8 +317,51 @@ await check('GET /api/zip 返回合法 zip 且内容一致', async () => {
   return `${(buf.length / 1024).toFixed(1)} KB`;
 });
 
-// ---------- 6. 上传 ----------
-console.log('6) 上传');
+// ---------- 5.5 多选下载（勾选若干文件/文件夹打一个 zip） ----------
+console.log('5.5) 多选下载 / 传输记录');
+await check('GET /api/download-many 把选中的几项打进一个 zip', async () => {
+  const q = new URLSearchParams();
+  q.append('p', path.join(zipDir, 'a.txt'));
+  q.append('p', path.join(zipDir, '子目录'));
+  const r = await req(`/api/download-many?${q}`);
+  assert(r.status === 200, `期望 200，实际 ${r.status}`);
+  const buf = Buffer.from(await r.arrayBuffer());
+  assert(buf[0] === 0x50 && buf[1] === 0x4b, '不是 zip');
+  const zipPath = path.join(tmp, 'many.zip');
+  await writeFile(zipPath, buf);
+  const out = path.join(tmp, 'unzip-many');
+  rm(out, { recursive: true, force: true });
+  execFileSync('powershell.exe', ['-NoProfile', '-Command', `Expand-Archive -LiteralPath '${zipPath}' -DestinationPath '${out}' -Force`], { stdio: 'pipe' });
+  const a1 = await readFile(path.join(out, 'a.txt'));
+  const b1 = await readFile(path.join(out, '子目录', 'b.bin'));
+  assert(a1.equals(await readFile(path.join(zipDir, 'a.txt'))), 'a.txt 内容不符');
+  assert(b1.equals(Buffer.from([0, 1, 2, 255, 254, 13, 10])), 'b.bin 内容不符');
+  const cd = r.headers.get('content-disposition') || '';
+  assert(cd.includes('.zip'), `文件名不像 zip：${cd}`);
+  return `${(buf.length / 1024).toFixed(1)} KB`;
+});
+
+await check('GET /api/download-many 没有选中项时报 400', async () => {
+  const r = await req('/api/download-many');
+  assert(r.status === 400, `期望 400，实际 ${r.status}`);
+  const d = await r.json();
+  assert(d.error === 'no_items', `错误码不对：${d.error}`);
+  return 'no_items';
+});
+
+await check('GET /api/history 里有刚传完的记录', async () => {
+  const r = await req('/api/history');
+  assert(r.status === 200, `期望 200，实际 ${r.status}`);
+  const d = await r.json();
+  assert(Array.isArray(d.history), 'history 不是数组');
+  assert(d.history.length > 0, '一条记录都没有');
+  const first = d.history[0];
+  assert(typeof first.name === 'string' && first.name.length > 0, '记录没有文件名');
+  assert(typeof first.bytes === 'number' && first.bytes > 0, '记录没有字节数');
+  assert(first.ok === true, '成功的传输被标成失败');
+  return `${d.history.length} 条，最近：${first.name}`;
+});
+
 await check('上传后文件字节一致', async () => {
   const payload = Buffer.from('上传回来的内容\n第二行 🚀', 'utf8');
   const dest = path.join(tmp, '上传件.txt');

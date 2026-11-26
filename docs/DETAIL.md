@@ -67,6 +67,8 @@
 | GET | `/api/list?path=` | 列目录（目录优先，最多 3000 条，带 `truncated`） |
 | GET/HEAD | `/api/download?path=` | 单文件下载，支持 `Range`（206），`filename*=UTF-8''` |
 | GET | `/api/zip?path=` | 整个目录流式打包（store 模式，chunked，不落临时文件） |
+| GET | `/api/download-many?p=&p=…` | 勾选多个文件/文件夹，打成一个 zip 流回来（`p` 可重复，最多 200 项） |
+| GET | `/api/history` | 这台电脑的传输记录（下载 / 上传 / 打包下载，最近 200 条，落盘 `history.json`） |
 | POST | `/api/upload?path=` | 上传：`x-file-name` 头 + 原始 body，重名自动加 ` (n)` |
 | GET | `/api/upload/resume?path=&name=&size=` | 问断点：返回 `{ id, offset, size, chunkSize }`（`offset` 就是已经收到的字节数） |
 | PUT | `/api/upload/resume/chunk?path=&name=&size=&offset=` | 传一块（8 MiB）。偏移对不上返回 409 + 服务端的真实 `offset` |
@@ -133,7 +135,7 @@
 ## 自测
 
 ```powershell
-node verify/e2e.mjs                          # 37 项端到端（自己起临时端口的服务）
+node verify/e2e.mjs                          # 40 项端到端（自己起临时端口的服务）
 node verify/exe-e2e.mjs                      # 18 项对 dist/DropSluice.exe 的端到端
 node verify/security.mjs --dist               # 12 项安全自检（本机痕迹 / 受控清单 / 成品二进制）
 node verify/device-info.mjs                  # 30 项设备信息（UA / 内网判定 / 清单字段 / 归属地）
