@@ -10,13 +10,13 @@
 
 **手机装这个**（仓库里的 apk 原文件，后缀就是 `.apk`，不会被当成 zip）：
 
-- Gitee（国内直连）：https://gitee.com/rain-veil/drop-sluice/raw/master/download/DropSluice-1.0.17.apk
-- GitHub：https://github.com/Regenschleier/dropsluice/raw/master/download/DropSluice-1.0.17.apk
+- [从 Gitee 下载](https://gitee.com/rain-veil/drop-sluice/raw/master/download/DropSluice-1.0.17.apk)（国内直连）
+- [从 GitHub 下载](https://github.com/Regenschleier/dropsluice/raw/master/download/DropSluice-1.0.17.apk)
 
 **电脑端二选一**：
 
-- 安装向导：https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-Setup-1.0.17.exe ｜ https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.17.exe
-- 解压就能用：https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-1.0.17-portable.zip ｜ https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.17-portable.zip
+- 安装向导：[Gitee](https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-Setup-1.0.17.exe) · [GitHub](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.17.exe)
+- 解压就能用：[Gitee](https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-1.0.17-portable.zip) · [GitHub](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.17-portable.zip)
 
 > Gitee 的 Release 附件会把 apk 标成 `application/zip`（它按文件头猜类型），手机接下来会被当成压缩包，所以 apk 单独放在仓库里走上面的直链。
 > 如果已经误下了那个 zip：它就是完整的 apk，把后缀改回 `.apk` 一样能装。
