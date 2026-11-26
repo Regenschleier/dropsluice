@@ -5,9 +5,12 @@
 > **手机连不上 GitHub？** 用表格里第一列的 **Gitee 直链**（国内网络可直连）；两个地址是同一份文件，SHA256 完全相同。
 > GitHub 加速镜像站（ghproxy 之类）时好时坏，不推荐依赖。
 
+> 手机那一行给的是**仓库里的 apk 原文件**（`application/octet-stream`，文件名就是 `.apk`），不会被浏览器当成 zip；
+> 另外两行是 Release 附件（Gitee 的附件通道会把 apk 标成 `application/zip`，所以别拿它装手机）。
+
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
-| 装到手机上（扫码 + 文件管理） | **[Gitee 直链](https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-1.0.17.apk)** · [GitHub](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.17.apk) | ~3.3 MB |
+| 装到手机上（扫码 + 文件管理） | **[Gitee 直链](https://gitee.com/rain-veil/drop-sluice/raw/master/download/DropSluice-1.0.17.apk)** · [GitHub](https://github.com/Regenschleier/dropsluice/raw/master/download/DropSluice-1.0.17.apk) | ~3.3 MB |
 | 在电脑上跑（安装向导） | **[Gitee 直链](https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-Setup-1.0.17.exe)** · [GitHub](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.17.exe) | ~24 MB |
 | 不想安装、解压就用 | [Gitee 直链](https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-1.0.17-portable.zip) · [GitHub](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.17-portable.zip) | ~33 MB |
 
