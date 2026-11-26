@@ -9,7 +9,7 @@
 | 不想安装、解压就用 | [DropSluice-1.0.15-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.15-portable.zip) | ~33 MB |
 
 > 上面每条都直接指向最新一版 Release 里的文件（`releases/latest/download/…`），点一下就开始下。
-> 仓库是私有的，链接对**已登录且被授权的账号**有效。
+> 仓库已公开，链接对所有人有效。
 > **不再单独发布 90 MB 的单文件 exe**：安装包和绿色包里装的就是同一个程序，只是外面多了安装向导 / 压缩包这层壳。
 > 校验用 SHA256（Release 正文里也贴了一份）：
 >
