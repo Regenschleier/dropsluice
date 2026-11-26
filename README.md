@@ -1,12 +1,12 @@
 # DropSluice · 手机取件
 
-## ⬇️ 直接下载（v1.0.15）
+## ⬇️ 直接下载（v1.0.16）
 
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
-| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.15.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.15.apk)** | ~3.3 MB |
-| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.15.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.15.exe)** | ~24 MB |
-| 不想安装、解压就用 | [DropSluice-1.0.15-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.15-portable.zip) | ~33 MB |
+| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.16.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.16.apk)** | ~3.3 MB |
+| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.16.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.16.exe)** | ~24 MB |
+| 不想安装、解压就用 | [DropSluice-1.0.16-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.16-portable.zip) | ~33 MB |
 
 > 上面每条都直接指向最新一版 Release 里的文件（`releases/latest/download/…`），点一下就开始下。
 > 仓库已公开，链接对所有人有效。
@@ -14,9 +14,9 @@
 > 校验用 SHA256（Release 正文里也贴了一份）：
 >
 > ```
-> 9FA849A1984D3B87395D178A6DA82326BFC63254EF759A80F04A1D839759FF4F  DropSluice-1.0.15.apk
-> 350E6476E7555548676388423AD4738105BD615E5E34D741491085BF9336CA91  DropSluice-Setup-1.0.15.exe
-> 78D55996F8957A4E1FFC51866700D764DE615F62EE815EF79EAAEEFD716ACE7D  DropSluice-1.0.15-portable.zip
+> A005F02DA983F04F59EE787E7489A98BD86974A0C51EF3498662EF65F06AB86F  DropSluice-1.0.16.apk
+> C68CFB5BC2DD02669201BA3CA0801B9891DDA839FAAF1645524C476BDFE2E992  DropSluice-Setup-1.0.16.exe
+> 7BFBA11187A436BA029C9C722E396C324220E78DAC97CCEBFBB73D28EED65159  DropSluice-1.0.16-portable.zip
 > ```
 
 ---
@@ -28,6 +28,7 @@
 - 把整个文件夹**打包成一个 zip** 下载（store 模式，只打包不压缩，解开还是原文件）
 - 反过来，把手机里的照片/文件**传回去**
 - **传的时候看得见**：手机底部和电脑面板上都会显示正在传哪个文件、传了多少、多快（下载 / 上传 / 打包下载都一样）
+- **照片和 PDF 直接在 App 里看**：点开文件就进全屏预览（图片可放大，PDF 分页翻），不用先下载再找应用打开；不支持预览的格式照旧一键下载
 - **大文件断了能接着传**：8 MiB 以上的文件自动分块，断网、切后台、重启服务之后重新选同一个文件，会从断点继续，不用从头再来
 - **传之前先看盘**：目标盘放不下就直接拦下来并说还差多少（HTTP 507），不会让你白传半小时
 - **勾几个一起下**：长按任意一行进入多选，选完点「下载所选」，打成一个 zip 一次下
@@ -119,12 +120,18 @@ node server.mjs --pair          # 服务已经在跑时，再要一个新配对�
 1. 手机连**同一个 Wi-Fi**（和电脑同一个路由器；电脑插网线也行，只要在同一个网段）。
 2. 手机装 **DropSluice App**（Release 里的 `.apk`，或者页面上那个下载按钮）；打开 App 点「扫码」，扫电脑上的二维码。
 3. App 扫到码会自己带上配对码，一般直接按「配对」；第一次之外不用再扫码。
-4. 之后随便逛：点盘符 → 进文件夹 → 点文件就下载（走 App 的下载器，原样保存）。
+4. 之后随便逛：点盘符 → 进文件夹 → 点文件：图片和 PDF 先打开预览（预览页右上角可下载），其它格式直接下载（走 App 的下载器，原样保存）。
 5. 底栏三个按钮：「打包下载本文件夹」（当前目录打成一个 zip）、「传文件上来」（把手机里的文件传回当前目录）、「解除配对」。
 6. **下多个文件**：长按任意一行进入多选（会震一下），勾几项 → 底部「下载所选」，打成一个 zip 一次下。
 7. **找下完的文件**：点右上角 **⬇** 进下载页——正在传的文件、手机里已下载的文件（点条目用别的应用打开，或直接「打开系统的下载列表」）、这台电脑的传输记录，都在这页。
 
 ![手机上的下载页：正在下载 / 手机里已下载 / 传输记录](verify/shots/phone-downloads.png)
+
+8. **直接在 App 里看**：点图片、PDF 会先打开预览页（图片可双击放大、PDF 分页翻，右上角仍可一键下载）；Word / Excel / PPT 这类先下载，用手机里的 WPS 打开最稳。
+
+![手机里预览 PDF：pdf.js 渲染，右上角是下载按钮](verify/shots/preview-pdf.png)
+
+> 预览是**电脑端发的网页**，所以不用更新 APK 就能用；只有 `pdf.min.mjs` / `pdf.worker.min.mjs` 这两个文件被打进了 exe（约 1.7 MB）。
 
 > 手机浏览器是**打不开**的：同一串地址用浏览器开，只会收到一页「请用 DropSluice App 打开」。这是故意的——手机上只留一条入口，省得两套界面各修一遍。
 >
@@ -223,7 +230,7 @@ iPhone · iOS 18.1 · Safari · 配对 2 小时前 · 最近 刚刚
 ## 5. 自测怎么跑（想确认「真的没压缩」）
 
 ```bash
-node verify/e2e.mjs          # 端到端 40 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、分块续传、超限 413、传输进度、解除
+node verify/e2e.mjs          # 端到端 43 项：配对、列目录、下载 SHA256、Range 续传、zip、上传、分块续传、超限 413、传输进度、解除
 node verify/device-info.mjs  # 设备信息 30 项：UA 解析、内网判定、IP/网卡/Wi-Fi/型号、归属地
 node verify/terminal-qr.mjs  # 终端二维码 5 项（矩阵 → 半块字符 → 反推矩阵逐格一致）
 node verify/exe-e2e.mjs      # 打包版 exe 20 项（需要先构建，见 §6.1）
@@ -251,9 +258,9 @@ python verify/decode-panel-qr.py               # 把面板上的二维码 SVG �
 
 | 产物 | 大小 | 怎么用 | 适合谁 |
 | --- | --- | --- | --- |
-| `dist/DropSluice-1.0.15-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
+| `dist/DropSluice-1.0.16-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
 | `dist/DropSluice.exe` | ~90 MB | 直接双击（单文件，自带 Node） | 自己放个地方跑 |
-| `dist/DropSluice-Setup-1.0.15.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
+| `dist/DropSluice-Setup-1.0.16.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
 
 exe 是**单文件**：Node 官方 SEA（Single Executable Application）把 `outfile + node.exe` 缝在一起，`public/`、`desktop/` 里的 6 个文件作为 assets 内嵌，双击即用，目标机器**不需要装 Node**。
 
@@ -291,7 +298,7 @@ winget install --id JRSoftware.InnoSetup --accept-source-agreements --accept-pac
 # ② 抓简体中文语言包到 build\tools\ChineseSimplified.isl（Inno 自带 Languages\ 里没有中文）
 node scripts/fetch-inno-chinese.mjs
 
-# ③ 编译：产物是 dist\DropSluice-Setup-1.0.15.exe
+# ③ 编译：产物是 dist\DropSluice-Setup-1.0.16.exe
 "C:\Users\<你>\AppData\Local\Programs\Inno Setup 6\ISCC.exe" installer\dropsluice.iss
 ```
 
@@ -329,7 +336,7 @@ node verify/exe-e2e.mjs --exe dist\DropSluice.exe --port 18903   # 20 项
 构建（Windows，需要 JDK 17+ 和 Android SDK）：
 
 ```powershell
-$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.15.10-hotspot'
+$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.16.10-hotspot'
 $env:GRADLE_USER_HOME='<repo>\build\gradle-home'
 cd android
 ..\build\gradle-8.9\bin\gradle.bat :app:assembleRelease --no-daemon --console=plain
@@ -362,7 +369,7 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 **已验证（都有脚本或命令可复跑）：**
 
 - 二维码编码器：16 段测试串 × 8 种掩码 = **128 个矩阵与 python-qrcode 逐格完全一致**；zxing 能把每种掩码都解码回原文；终端半块字符版 5 项回归全过。
-- 服务端 e2e **40 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401、**Tailscale 的 `100.64/10` 判定 9 个边界值 + 状态里有 `tailnet` 段**、**传输登记表能算速率并标记完成 / 下载进行中 `/api/transfers` 有 `download` 条目**、**分块上传：断在中间能续上并拼回原文件 / 没传完 done 被 409 挡下 / 声明超上限 413**。
+- 服务端 e2e **43 项**：未配对 302/401、6 位码配对（中文设备名）、配对码一次性作废、Bearer 头、列盘符与常用目录、相对路径被拒、4.5 MB 文件下载 **SHA256 与源文件一致**、`Content-Length`/`Accept-Ranges`/`no-store`/无 `Content-Encoding`/`filename*=UTF-8''`、HEAD 长度一致、**Range 4 段拼接逐字节等于原文件**、**zip（子目录+中文名+空文件+二进制）用 Expand-Archive 解开逐字节一致**、上传字节一致且重名自动改名不覆盖、**超限上传 413 且不留半截文件**、**手机浏览器被 403 引导页挡住 / App 的 UA 放行 / `HEAD /apk` 给出安装包**、解除后旧令牌 401、**Tailscale 的 `100.64/10` 判定 9 个边界值 + 状态里有 `tailnet` 段**、**传输登记表能算速率并标记完成 / 下载进行中 `/api/transfers` 有 `download` 条目**、**分块上传：断在中间能续上并拼回原文件 / 没传完 done 被 409 挡下 / 声明超上限 413**。
 - 设备信息 **30 项**：UA→「iPhone · iOS 18.1 · Safari」、公网/内网判定（`172.16` 内网但 `172.32` 公网）、IP/网卡/Wi-Fi 名落库、`1.1.1.1` 真查到「澳大利亞 · Queensland · South Brisbane · Cloudflare」且第二次走缓存。
 - 打包版 exe **20 项**：面板 200、二维码 SVG、配对、下载 SHA256、**伪造 Host → 403 / 本机 Host → 200**（只允许本机）、解除后 401。
 - 安全自检 **12 项**（`verify/security.mjs --dist`）：受控文件里没有本机绝对路径/用户名/真实内网 IP/token/私钥/明文口令；受控清单里没有 `dist/`、`.data/`、`*.jks`、`*.apk/.exe/.zip`、token 缓存；HttpOnly/SameSite/上传上限/413/配对限速/JSON 上限/`no-store, no-transform`/本机 Host 校验都在；**成品 exe 与 apk 的二进制里没有 `C:\Users\<你>`、`10.17.`、`github_pat_`**。
@@ -372,7 +379,7 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 
 **未验证（不做任何保证）：**
 
-- **安装包（`DropSluice-Setup-1.0.15.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
+- **安装包（`DropSluice-Setup-1.0.16.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
 - **APK 已经装到真机上并打开过**（截图里是 1.0.9 之后那套「打不开这台电脑 / net::ERR_CONNECTION_ABORTED」错误页，附目标地址与两个按钮），但**相机扫码、下载保存路径、返回手势**这三项还没逐条确认；CameraX 在这个机型上的预览表现也未单独验证。
 - **真机扫码（App）**：写这份文档的机器上没有可用的手机取件环境，所有"手机端"结论来自 HTTP 层自测（同一套 API、同一套 cookie 逻辑），没有经过真手机。手机浏览器被网关挡掉这件事有自测覆盖（403 引导页 / App 的 UA 放行 / `/apk` 可下载）。
 - **Tailscale 跨网这条线没在真手机上走过**：电脑这一端已经登录并拿到 `100.x` 地址、面板/终端/二维码都验证过，自测只覆盖「`100.64/10` 判定」和「状态里有 tailnet 段」；手机装 Tailscale 后扫远程码、真的传完一个文件，还要你亲手试。
