@@ -1,12 +1,12 @@
 # DropSluice · 手机取件
 
-## ⬇️ 直接下载（v1.0.14）
+## ⬇️ 直接下载（v1.0.15）
 
 | 我要… | 下载 | 大小 |
 | --- | --- | --- |
-| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.14.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.14.apk)** | ~3.3 MB |
-| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.14.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.14.exe)** | ~24 MB |
-| 不想安装、解压就用 | [DropSluice-1.0.14-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.14-portable.zip) | ~33 MB |
+| 装到手机上（扫码 + 文件管理） | **[DropSluice-1.0.15.apk](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.15.apk)** | ~3.3 MB |
+| 在电脑上跑（安装向导） | **[DropSluice-Setup-1.0.15.exe](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.15.exe)** | ~24 MB |
+| 不想安装、解压就用 | [DropSluice-1.0.15-portable.zip](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.15-portable.zip) | ~33 MB |
 
 > 上面每条都直接指向最新一版 Release 里的文件（`releases/latest/download/…`），点一下就开始下。
 > 仓库是私有的，链接对**已登录且被授权的账号**有效。
@@ -14,9 +14,9 @@
 > 校验用 SHA256（Release 正文里也贴了一份）：
 >
 > ```
-> 139EE50A99B98A98546AA74D90D505581FCF29F7B115CCA365BCABE818CA73AF  DropSluice-1.0.14.apk
-> 3DAECE66828CE5AF8282ED6DC750EB9A9B9510E7A3771553DD10D5A7A74BB99D  DropSluice-Setup-1.0.14.exe
-> C24FF78A08FE374C740BFDF38D928EAB8ACD9CC748AF4CE63B1B437E9DE3841C  DropSluice-1.0.14-portable.zip
+> 9FA849A1984D3B87395D178A6DA82326BFC63254EF759A80F04A1D839759FF4F  DropSluice-1.0.15.apk
+> 350E6476E7555548676388423AD4738105BD615E5E34D741491085BF9336CA91  DropSluice-Setup-1.0.15.exe
+> 78D55996F8957A4E1FFC51866700D764DE615F62EE815EF79EAAEEFD716ACE7D  DropSluice-1.0.15-portable.zip
 > ```
 
 ---
@@ -251,9 +251,9 @@ python verify/decode-panel-qr.py               # 把面板上的二维码 SVG �
 
 | 产物 | 大小 | 怎么用 | 适合谁 |
 | --- | --- | --- | --- |
-| `dist/DropSluice-1.0.14-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
+| `dist/DropSluice-1.0.15-portable.zip` | ~33 MB | 解压，双击 `一键开始.bat` | 想立刻用、不想装东西 |
 | `dist/DropSluice.exe` | ~90 MB | 直接双击（单文件，自带 Node） | 自己放个地方跑 |
-| `dist/DropSluice-Setup-1.0.14.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
+| `dist/DropSluice-Setup-1.0.15.exe` | ~24 MB | 安装向导 → 开始菜单 | 想「像正常软件那样装上」 |
 
 exe 是**单文件**：Node 官方 SEA（Single Executable Application）把 `outfile + node.exe` 缝在一起，`public/`、`desktop/` 里的 6 个文件作为 assets 内嵌，双击即用，目标机器**不需要装 Node**。
 
@@ -291,7 +291,7 @@ winget install --id JRSoftware.InnoSetup --accept-source-agreements --accept-pac
 # ② 抓简体中文语言包到 build\tools\ChineseSimplified.isl（Inno 自带 Languages\ 里没有中文）
 node scripts/fetch-inno-chinese.mjs
 
-# ③ 编译：产物是 dist\DropSluice-Setup-1.0.14.exe
+# ③ 编译：产物是 dist\DropSluice-Setup-1.0.15.exe
 "C:\Users\<你>\AppData\Local\Programs\Inno Setup 6\ISCC.exe" installer\dropsluice.iss
 ```
 
@@ -329,7 +329,7 @@ node verify/exe-e2e.mjs --exe dist\DropSluice.exe --port 18903   # 20 项
 构建（Windows，需要 JDK 17+ 和 Android SDK）：
 
 ```powershell
-$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'
+$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.15.10-hotspot'
 $env:GRADLE_USER_HOME='<repo>\build\gradle-home'
 cd android
 ..\build\gradle-8.9\bin\gradle.bat :app:assembleRelease --no-daemon --console=plain
@@ -372,7 +372,7 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 
 **未验证（不做任何保证）：**
 
-- **安装包（`DropSluice-Setup-1.0.14.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
+- **安装包（`DropSluice-Setup-1.0.15.exe`）的安装过程没能在本机跑通**：编译成功、Inno 的编译期校验也过，但在这台机器上，安装进程往 `C:\Program Files`、`%LOCALAPPDATA%\Programs`、`HKCU\...\Uninstall` 写东西时一律 `错误 5: 拒绝访问`——连一个只有三行的最小 Inno 脚本也一样失败。这是**本机环境**的限制（DSH 起的进程都是提权进程，Inno 为此会切到一个受限令牌），不是脚本写错。所以「双击 → 装进 Program Files → 开始菜单 → 卸载」这条链路**请你亲手试一次**；如果它报错，直接用绿色包，功能完全一样，只是不写注册表、不建开始菜单。
 - **APK 已经装到真机上并打开过**（截图里是 1.0.9 之后那套「打不开这台电脑 / net::ERR_CONNECTION_ABORTED」错误页，附目标地址与两个按钮），但**相机扫码、下载保存路径、返回手势**这三项还没逐条确认；CameraX 在这个机型上的预览表现也未单独验证。
 - **真机扫码（App）**：写这份文档的机器上没有可用的手机取件环境，所有"手机端"结论来自 HTTP 层自测（同一套 API、同一套 cookie 逻辑），没有经过真手机。手机浏览器被网关挡掉这件事有自测覆盖（403 引导页 / App 的 UA 放行 / `/apk` 可下载）。
 - **Tailscale 跨网这条线没在真手机上走过**：电脑这一端已经登录并拿到 `100.x` 地址、面板/终端/二维码都验证过，自测只覆盖「`100.64/10` 判定」和「状态里有 tailnet 段」；手机装 Tailscale 后扫远程码、真的传完一个文件，还要你亲手试。
