@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DropSluice · 预览</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  html, body { height: 100%; }
+  body { margin: 0; background: #0b0d10; color: #e8ebf0; display: flex; flex-direction: column; }
+  .pv-head {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; background: rgba(15,17,21,.92);
+    backdrop-filter: blur(8px); border-bottom: 1px solid #23272f;
+  }
+  .pv-head .icon { flex: 0 0 auto; }
+  .pv-name {
+    flex: 1 1 auto; min-width: 0;
+    font-size: 14px; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .pv-sub { font-size: 11.5px; color: #7f8794; font-weight: 400; margin-left: 6px; }
+  .pv-body { flex: 1 1 auto; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
+  .pv-img-wrap { padding: 8px; }
+  .pv-img { display: block; width: 100%; height: auto; border-radius: 6px; transition: transform .18s ease; transform-origin: top center; }
+  .pv-img.zoomed { transform: scale(2); }
+  .pv-page { display: block; margin: 10px auto; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,.45); max-width: 100%; }
+  .pv-note { padding: 28px 18px; text-align: center; color: #9aa3af; font-size: 13.5px; line-height: 1.7; }
+  .pv-note b { color: #e8ebf0; }
+  .pv-note .big { font-size: 34px; display: block; margin-bottom: 10px; }
+  .pv-actions { margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .pv-pre {
+    margin: 0; padding: 12px 14px 40px; font-size: 12.5px; line-height: 1.6;
+    font-family: ui-monospace, Consolas, "Courier New", monospace;
+    white-space: pre-wrap; word-break: break-word; color: #cfd6e0;
+  }
+  .pv-progress { padding: 10px 14px; font-size: 12px; color: #7f8794; }
+</style>
+</head>
+<body>
+  <header class="pv-head">
+    <a id="back" class="icon" href="/" title="返回" aria-label="返回">
+      <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+    </a>
+    <div class="pv-name"><span id="name">预览</span><span class="pv-sub" id="sub"></span></div>
+    <a id="download" class="icon" href="#" title="下载" aria-label="下载">
+      <svg viewBox="0 0 24 24"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+    </a>
+  </header>
+  <main class="pv-body" id="body">
+    <div class="pv-note">正在打开…</div>
+  </main>
+  <script type="module" src="/preview.js"></script>
+</body>
+</html>

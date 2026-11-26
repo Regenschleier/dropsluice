@@ -87,6 +87,10 @@ const ASSET_FILES = [
   'need-app.html',
   'downloads.html',
   'downloads.js',
+  'preview.html',
+  'preview.js',
+  'pdfjs/pdf.min.mjs',
+  'pdfjs/pdf.worker.min.mjs',
 ];
 
 /** 单文件 exe 里没有磁盘上的 public/，静态资源从 SEA 里取 */

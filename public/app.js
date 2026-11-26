@@ -15,6 +15,9 @@
   const selected = new Set(); // 选中的绝对路径
   let rootsData = null;
 
+  // 能直接在预览页看的格式（其它格式照旧走下载）
+  const PREVIEWABLE = /\.(jpe?g|png|gif|webp|bmp|avif|svg|heic|heif|pdf|txt|md|json|log|csv|ini|ya?ml|xml|html|css|js|mjs|ts|docx?|xlsx?|pptx?)$/i;
+
   const fmtSize = (n) => {
     if (!n) return '';
     const u = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -104,17 +107,20 @@
       const li = document.createElement('li');
       const a = document.createElement(e.type === 'dir' ? 'button' : 'a');
       a.className = 'row';
+      const full = joinPath(cwd, e.name);
       if (e.type === 'dir') {
-        a.onclick = () => load(joinPath(cwd, e.name));
+        a.onclick = () => load(full);
+      } else if (PREVIEWABLE.test(e.name)) {
+        // 能预览的格式：点开先看，预览页里有下载按钮
+        a.href = `/preview?path=${encodeURIComponent(full)}`;
       } else {
-        a.href = `/api/download?path=${encodeURIComponent(joinPath(cwd, e.name))}`;
+        a.href = `/api/download?path=${encodeURIComponent(full)}`;
         a.setAttribute('download', e.name);
       }
       a.innerHTML = `<span class="ico">${iconFor(e)}</span><span class="name"></span><span class="meta"></span>`;
       a.querySelector('.name').textContent = e.name;
       a.querySelector('.meta').textContent = e.type === 'dir' ? '' : fmtSize(e.size);
 
-      const full = joinPath(cwd, e.name);
       a.dataset.path = full;
       a.innerHTML += '<span class="check" aria-hidden="true"></span>';
       attachSelect(a, full);

@@ -635,6 +635,65 @@ await check('状态里有 tailnet 段（面板据此显示远程那张码）', a
   return s.tailnet.up ? `已连：${s.tailnet.ip}` : '未登录 Tailscale（也能正常跑）';
 });
 
+// ---------- 10. 预览 ----------
+console.log('10) 预览（图片 / PDF / Office / 文本）');
+// 上一节已解除配对，这里重新配一台，才能访问需要登录的页面与接口
+{
+  const pr = await fetch(`${BASE}/api/admin/pair`, { method: 'POST' });
+  const pj = await pr.json();
+  const rr = await fetch(`${BASE}/api/pair`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ code: pj.pairing.code, name: '预览测试' }),
+  });
+  jar.capture(rr);
+  assert(rr.status === 200, `重新配对失败：${rr.status}`);
+}
+await check('preview-info 认得各种类型', async () => {
+  const cases = [
+    ['a.png', 'image'],
+    ['报告 v2.pdf', 'pdf'],
+    ['表.xlsx', 'office'],
+    ['说明.txt', 'text'],
+    ['setup.exe', 'other'],
+  ];
+  const got = [];
+  for (const [name, want] of cases) {
+    const p = path.join(tmp, name);
+    await writeFile(p, 'x');
+    const r = await req(`/api/preview-info?path=${encodeURIComponent(p)}`);
+    assert(r.status === 200, `${name} 期望 200，实际 ${r.status}`);
+    const info = await r.json();
+    assert(info.kind === want, `${name} 判成 ${info.kind}，期望 ${want}`);
+    got.push(`${name}=${info.kind}`);
+  }
+  return got.join('，');
+});
+
+await check('/preview 页面要配对才能进，预览脚本与 pdf.js 可直接取', async () => {
+  const page = await req('/preview');
+  assert(page.status === 200, `已配对时应 200，实际 ${page.status}`);
+  const js = await req('/preview.js');
+  assert(js.status === 200, `/preview.js 期望 200，实际 ${js.status}`);
+  const lib = await req('/pdfjs/pdf.min.mjs');
+  assert(lib.status === 200, `pdf.js 期望 200，实际 ${lib.status}`);
+  const worker = await req('/pdfjs/pdf.worker.min.mjs');
+  assert(worker.status === 200, `pdf.js worker 期望 200，实际 ${worker.status}`);
+  return '页面 200 / 脚本 200 / pdf.js 200 / worker 200';
+});
+
+await check('inline=1 时是 inline 而不是 attachment（PDF 才能内嵌渲染）', async () => {
+  const p = path.join(tmp, 'inline.pdf');
+  await writeFile(p, Buffer.from('%PDF-1.4\n'));
+  const a = await req(`/api/download?path=${encodeURIComponent(p)}`);
+  const b = await req(`/api/download?path=${encodeURIComponent(p)}&inline=1`);
+  const ca = a.headers.get('content-disposition') || '';
+  const cb = b.headers.get('content-disposition') || '';
+  assert(ca.startsWith('attachment'), `默认应为 attachment，实际 ${ca}`);
+  assert(cb.startsWith('inline'), `inline=1 应为 inline，实际 ${cb}`);
+  return 'attachment → inline';
+});
+
 // ---------- 汇总 ----------
 await rm(tmp, { recursive: true, force: true });
 await globalThis.__cleanup?.();

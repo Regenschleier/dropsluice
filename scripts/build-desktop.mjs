@@ -31,6 +31,10 @@ const ASSETS = {
   'need-app.html': 'public/need-app.html',
   'downloads.html': 'public/downloads.html',
   'downloads.js': 'public/downloads.js',
+  'preview.html': 'public/preview.html',
+  'preview.js': 'public/preview.js',
+  'pdfjs/pdf.min.mjs': 'public/pdfjs/pdf.min.mjs',
+  'pdfjs/pdf.worker.min.mjs': 'public/pdfjs/pdf.worker.min.mjs',
   'desktop.html': 'desktop/desktop.html',
 };
 
