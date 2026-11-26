@@ -10,7 +10,10 @@ import { qrSvg } from './lib/qr.mjs';
 import { primaryLanAddress } from './lib/net.mjs';
 
 export const name = 'phone-drop';
-export const inject = ['tools'];
+// `webServer` 是硬依赖：面板（二维码 / 配对码 / 换码）靠它挂 HTTP 路由。
+// 之前写成可选访问（ctx.get('webServer')），在这个版本里拿不到 → 路由没注册，
+// 面板请求落到 DSH 的兜底资源路由上，于是 GET 404、POST 405。改回直接依赖。
+export const inject = ['tools', 'webServer'];
 
 const PREFIX = '/phone-drop';
 const DEFAULT_PORT = Number(process.env.DROPSLUICE_PORT) || 18888;
@@ -245,6 +248,8 @@ async function handlePanelRequest(req, res, peer) {
     }
 
     if (sub === '/pair' && method === 'POST') {
+      // 接管模式（服务是用户自己起的 exe / 另一个进程）下 running 永远是 null：
+      // 换码必须交给那台实例自己做，然后用它的状态回给面板，而不是调本地 startPairing()。
       if (!running) {
         const inst = await ensureStarted();
         if (inst?.adopted) {
@@ -253,6 +258,7 @@ async function handlePanelRequest(req, res, peer) {
             signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
           });
           if (!probe.ok) throw new Error('接管的那台 DropSluice 拒绝换码');
+          return sendJson(res, await snapshot(inst.port));
         }
       }
       const pair = running?.startPairing();
@@ -426,7 +432,7 @@ const tool = {
 export function apply(ctx) {
   ctx.effect(() => ctx.tools.register(tool));
 
-  const webServer = ctx.get?.('webServer');
+  const webServer = ctx.webServer;
   if (webServer && typeof webServer.register === 'function') {
     ctx.effect(() =>
       webServer.register({
