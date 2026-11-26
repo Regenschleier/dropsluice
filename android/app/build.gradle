@@ -19,8 +19,8 @@ android {
         applicationId "dev.dropsluice.app"
         minSdk 24
         targetSdk 34
-        versionCode 14
-        versionName "1.0.14"
+        versionCode 15
+        versionName "1.0.15"
         // 电脑面板靠这段 UA 认出「这是官方 App」而不是随便一个浏览器
         buildConfigField "String", "UA_TAG", "\"DropSluice/1.0\""
     }

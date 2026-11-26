@@ -1,5 +1,12 @@
 package dev.dropsluice.app;
 
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
+import android.view.Gravity;
+import android.view.Window;
 import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
@@ -542,31 +549,93 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private int dp(float v) {
+        return Math.round(v * getResources().getDisplayMetrics().density);
+    }
+
+    /** 一行：左边图标位 + 右边文字，点完整行都响应 */
+    private void addSheetRow(LinearLayout parent, String glyph, int textRes, Runnable action, Dialog dialog) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(dp(14), dp(13), dp(14), dp(13));
+        row.setBackgroundColor(Color.TRANSPARENT);
+
+        TextView icon = new TextView(this);
+        icon.setText(glyph);
+        icon.setTextSize(15f);
+        icon.setTextColor(0xFF8B93A1);
+        icon.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(dp(28), ViewGroup.LayoutParams.WRAP_CONTENT);
+        row.addView(icon, iconLp);
+
+        TextView label = new TextView(this);
+        label.setText(textRes);
+        label.setTextSize(15.5f);
+        label.setTextColor(0xFFE8EBF0);
+        LinearLayout.LayoutParams labelLp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        labelLp.leftMargin = dp(6);
+        row.addView(label, labelLp);
+
+        row.setOnClickListener(v -> {
+            dialog.dismiss();
+            action.run();
+        });
+        parent.addView(row);
+    }
+
+    private void addSheetDivider(LinearLayout parent) {
+        View line = new View(this);
+        line.setBackgroundColor(0xFF23272E);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Math.max(1, dp(0.5f)));
+        lp.leftMargin = dp(48);
+        parent.addView(line, lp);
+    }
+
     private void showExitSheet() {
-        String[] items = new String[]{
-                getString(R.string.action_rescan),
-                getString(R.string.action_manual),
-                getString(R.string.action_forget),
-                getString(R.string.action_exit)
-        };
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.action_more)
-                .setItems(items, (d, which) -> {
-                    switch (which) {
-                        case 0:
-                            startScan();
-                            break;
-                        case 1:
-                            promptManualUrl();
-                            break;
-                        case 2:
-                            forgetComputer();
-                            break;
-                        default:
-                            finish();
-                    }
-                })
-                .show();
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(dp(6), dp(6), dp(6), dp(6));
+
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFF15181D);
+        bg.setCornerRadius(dp(18));
+        bg.setStroke(Math.max(1, dp(1)), 0xFF262B33);
+        box.setBackground(bg);
+
+        TextView head = new TextView(this);
+        head.setText(R.string.action_more);
+        head.setTextSize(13f);
+        head.setTypeface(Typeface.DEFAULT_BOLD);
+        head.setTextColor(0xFF7F8794);
+        head.setPadding(dp(18), dp(14), dp(18), dp(6));
+        box.addView(head);
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(box);
+
+        addSheetRow(box, "⟲", R.string.action_rescan, this::startScan, dialog);
+        addSheetDivider(box);
+        addSheetRow(box, "⌨", R.string.action_manual, this::promptManualUrl, dialog);
+        addSheetDivider(box);
+        addSheetRow(box, "⌫", R.string.action_forget, this::forgetComputer, dialog);
+        addSheetDivider(box);
+        addSheetRow(box, "⏻", R.string.action_exit, this::finish, dialog);
+
+        View cancelGap = new View(this);
+        box.addView(cancelGap, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(6)));
+
+        Window win = dialog.getWindow();
+        if (win != null) {
+            win.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            win.setGravity(Gravity.BOTTOM);
+            win.getDecorView().setPadding(dp(10), 0, dp(10), dp(12));
+        }
+        dialog.show();
+        if (win != null) {
+            win.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
     }
 
     private void forgetComputer() {

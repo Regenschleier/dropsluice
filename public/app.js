@@ -44,6 +44,8 @@
     return '📦';
   };
 
+  let hostName = '';
+
   async function api(url, opts) {
     const res = await fetch(url, { credentials: 'same-origin', ...opts });
     if (res.status === 401) { location.href = '/pair'; throw new Error('unauthorized'); }
@@ -230,7 +232,7 @@
 
       const title = document.createElement('span');
       title.className = 'title';
-      title.textContent = '这台电脑';
+      title.textContent = hostName || '这台电脑';
       crumbs.append(title);
 
       for (const d of data.drives) {
@@ -440,7 +442,17 @@
   setInterval(pollXfer, 900);
 
   // 首次进入：地址里带着 #<目录> 就回到那一层（刷新/被系统杀掉再回来都不丢位置）
-  const startPath = decodeURIComponent((location.hash || '').replace(/^#/, ''));
-  if (startPath) load(startPath, { push: false });
-  else showRoots({ replace: false });
+  api('/api/me')
+    .then((me) => {
+      if (me && me.host) {
+        hostName = me.host;
+        document.title = `DropSluice · ${hostName}`;
+      }
+    })
+    .catch(() => {})
+    .finally(() => {
+      const startPath = decodeURIComponent((location.hash || '').replace(/^#/, ''));
+      if (startPath) load(startPath, { push: false });
+      else showRoots({ replace: false });
+    });
 })();
