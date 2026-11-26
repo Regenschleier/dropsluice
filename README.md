@@ -1,68 +1,82 @@
-# DropSluice · 手机取件
+# DropSluice
 
-## ⬇️ 直接下载（v1.0.17）
+在自己电脑上开个小服务，手机连同一个 Wi-Fi、扫一次码，就能翻这台电脑的磁盘、把文件原样拿走。
 
-> **手机连不上 GitHub？** 用表格里第一列的 **Gitee 直链**（国内网络可直连）；两个地址是同一份文件，SHA256 完全相同。
-> GitHub 加速镜像站（ghproxy 之类）时好时坏，不推荐依赖。
+不转码，也不重新压缩：下载完的文件和电脑上那个字节完全一样，SHA256 对得上。反过来，手机里的照片、视频也能传回电脑。
 
-> 手机那一行给的是**仓库里的 apk 原文件**（`application/octet-stream`，文件名就是 `.apk`），不会被浏览器当成 zip；
-> 另外两行是 Release 附件（Gitee 的附件通道会把 apk 标成 `application/zip`，所以别拿它装手机）。
+电脑端有三种跑法——装成 DeepSeek Harness 的插件（输入框上方会出现「传到手机」）、命令行跑 `node server.mjs`、或者双击一个 exe。三种是同一份代码，只用 Node 内置模块，不用装任何第三方依赖。
 
-| 我要… | 下载 | 大小 |
-| --- | --- | --- |
-| 装到手机上（扫码 + 文件管理） | **[Gitee 直链](https://gitee.com/rain-veil/drop-sluice/raw/master/download/DropSluice-1.0.17.apk)** · [GitHub](https://github.com/Regenschleier/dropsluice/raw/master/download/DropSluice-1.0.17.apk) | ~3.3 MB |
-| 在电脑上跑（安装向导） | **[Gitee 直链](https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-Setup-1.0.17.exe)** · [GitHub](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.17.exe) | ~24 MB |
-| 不想安装、解压就用 | [Gitee 直链](https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-1.0.17-portable.zip) · [GitHub](https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.17-portable.zip) | ~33 MB |
+## 下载（v1.0.17）
 
-> 上面每条都直接指向最新一版 Release 里的文件（`releases/latest/download/…`），点一下就开始下。
-> 仓库已公开，链接对所有人有效。
-> **不再单独发布 90 MB 的单文件 exe**：安装包和绿色包里装的就是同一个程序，只是外面多了安装向导 / 压缩包这层壳。
-> 校验用 SHA256（Release 正文里也贴了一份）：
->
-> ```
-> 24D2199646B546739DA381DF4DB6EBE7D90AF47C22710D07E63DFF106D283498  DropSluice-1.0.17.apk
-> 5D1F26271D4C5527ACFCB022162C53C6D4B845E1BAEFEC0B5DCF9931AC1446F0  DropSluice-Setup-1.0.17.exe
-> 32849EBAB716DBAD5E4D2D4394C1CF2509294340FD82A3F83FB609CBC6B5795B  DropSluice-1.0.17-portable.zip
-> ```
+**手机装这个**（仓库里的 apk 原文件，后缀就是 `.apk`，不会被当成 zip）：
 
----
+- Gitee（国内直连）：https://gitee.com/rain-veil/drop-sluice/raw/master/download/DropSluice-1.0.17.apk
+- GitHub：https://github.com/Regenschleier/dropsluice/raw/master/download/DropSluice-1.0.17.apk
 
-在自己电脑上开一个小服务，手机连同一个 Wi-Fi，扫一次二维码，就能：
+**电脑端二选一**：
 
-- 浏览这台电脑的**整块磁盘**（C:、D:、桌面、下载、文档、图片、视频…）
-- **原样下载**文件：不转码、不重新压缩，下载完的 SHA256 和电脑上那个文件一模一样
-- 把整个文件夹**打包成一个 zip** 下载（store 模式，只打包不压缩，解开还是原文件）
-- 反过来，把手机里的照片/文件**传回去**
-- **传的时候看得见**：手机底部和电脑面板上都会显示正在传哪个文件、传了多少、多快（下载 / 上传 / 打包下载都一样）
-- **照片和 PDF 直接在 App 里看**：点开文件就进全屏预览（图片可放大，PDF 分页翻），不用先下载再找应用打开；不支持预览的格式照旧一键下载
-- **电脑给手机传文件**：面板上「给手机传文件」选文件（可多选、有进度条），手机打开就在「电脑发来的文件」里，点开即预览或下载，可单独移除或一键清空
-- **列表看得清**：每个文件都显示大小和修改时间，可按名称 / 时间 / 大小排序，升序降序一点就切（手机记得住你的选择）
-- **大文件断了能接着传**：8 MiB 以上的文件自动分块，断网、切后台、重启服务之后重新选同一个文件，会从断点继续，不用从头再来
-- **传之前先看盘**：目标盘放不下就直接拦下来并说还差多少（HTTP 507），不会让你白传半小时
-- **勾几个一起下**：长按任意一行进入多选，选完点「下载所选」，打成一个 zip 一次下
-- **下载页**：顶上 ⬇ 就是它——正在传的文件、手机里已下载的文件（点一下用别的应用打开）、这台电脑的传输记录都在这页
-- **传输时不息屏**：App 里正在传东西时会把屏幕钉住，免得自动锁屏把 Wi-Fi 掐了
-- **跨网络**：不在同一个 Wi-Fi 时走 Tailscale（手机和电脑都装、登录同一个账号；地址固定、只有自己人可达、WireGuard 加密）。
+- 安装向导：https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-Setup-1.0.17.exe ｜ https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-Setup-1.0.17.exe
+- 解压就能用：https://gitee.com/rain-veil/drop-sluice/releases/download/v1.0.17/DropSluice-1.0.17-portable.zip ｜ https://github.com/Regenschleier/dropsluice/releases/latest/download/DropSluice-1.0.17-portable.zip
 
-电脑那一端有两种用法：装成 DeepSeek Harness 的插件（网页输入框上方出现「📱 传到手机」按钮），或者直接跑一个命令行服务 / 一个 exe。三种形态是同一份代码。
+> Gitee 的 Release 附件会把 apk 标成 `application/zip`（它按文件头猜类型），手机接下来会被当成压缩包，所以 apk 单独放在仓库里走上面的直链。
+> 如果已经误下了那个 zip：它就是完整的 apk，把后缀改回 `.apk` 一样能装。
 
-- 运行**零第三方依赖**：只用 Node 内置模块（连 zip 和二维码都是自己写的）
-- 手机端**只认 App**：不提供网页版。拿手机浏览器打开服务地址，会看到一页「请用 DropSluice App 打开」的引导（附安装包下载按钮）；浏览、下载、上传都在 App 里做，网页只在电脑上负责配对
-- 网络只走**同一个局域网**：服务监听 `0.0.0.0:18888`，但配对这一步只在电脑本机能开，手机必须拿着 6 位码换令牌
+校验值（两个仓库是同一份文件）：
+
+```
+24D2199646B546739DA381DF4DB6EBE7D90AF47C22710D07E63DFF106D283498  DropSluice-1.0.17.apk
+5D1F26271D4C5527ACFCB022162C53C6D4B845E1BAEFEC0B5DCF9931AC1446F0  DropSluice-Setup-1.0.17.exe
+32849EBAB716DBAD5E4D2D4394C1CF2509294340FD82A3F83FB609CBC6B5795B  DropSluice-1.0.17-portable.zip
+```
 
 ---
 
-## 0. 先看这里：它凭什么说「没有压缩」
+## 能干什么
 
-很多传输工具会「顺手」把照片转一遍格式、把视频转一遍码率，或者把 zip 重新压一遍。DropSluice 的做法是：
+**整块磁盘都能翻。** C:、D:、桌面、下载、文档、图片、视频，点进去就是文件夹。
 
-1. 下载走 HTTP 原始字节流，带 `Content-Length`，并明确告诉浏览器 `Cache-Control: no-store, no-transform`（别缓存、别改写），响应里**没有** `Content-Encoding`。
-2. 文件夹打包用 **store 模式 zip**：只写目录信息，不压缩内容。zip 里每个文件的字节和磁盘上的字节完全相同。
-3. 校验不是嘴上说：自测脚本会下载一个 4.5 MB 的伪随机文件、算 SHA256 和源文件比；再把 zip 用 Windows 自带的 `Expand-Archive` 解开，逐字节比对。
+**原样下载。** 走原始字节流，不转码不压缩，下载完的 SHA256 和电脑上那个文件一致。文件夹可以打成一个 zip 下载，zip 是 store 模式（只打包不压缩），解开还是原文件。
 
-三件事都在本机实测过（见 §7「已验证 / 未验证」）。
+**手机往电脑传。** 底栏「传文件上来」把手机里的东西传回当前目录。8 MiB 以上的文件自动分块，断网、切后台、重启服务之后重新选同一个文件，会从断点接着传。
 
-### 长什么样
+**传的时候看得见。** 手机底部和电脑面板都会显示正在传哪个文件、传了多少、速度多少。
+
+**图片和 PDF 直接在 App 里看。** 点开就进预览，图片能放大，PDF 分页翻。Word / Excel / PPT 先下载，用 WPS 打开最稳。
+
+**电脑往手机发。** 面板上「给手机传文件」，选文件（可多选、有进度条），手机上就在「电脑发来的文件」里，点开即预览或下载。
+
+**列表看得清。** 每个文件带大小和修改时间，能按名称 / 时间 / 大小排序，升降序一点就切，手机记得住你的选择。
+
+**勾几个一起下。** 长按任意一行进多选，选完点「下载所选」，打成一个 zip 一次下。
+
+**下载页。** 右上角 ⬇：正在传的、手机里已下载的、这台电脑的传输记录，都在这一页。
+
+**开传前先看盘。** 目标盘放不下就直接拦下来并告诉你还差多少，不会让你白传半小时。
+
+**传输时不锁屏。** App 里在传东西时会把屏幕钉住，免得自动锁屏把 Wi-Fi 掐了。
+
+**不在同一个 Wi-Fi 也能用。** 走 Tailscale：两端都装、登录同一个账号，地址固定，只有自己人可达，WireGuard 加密。详见 `docs/remote-tailscale.md`。
+
+还有两条限制写在前面：
+
+- 手机端只认 App。拿手机浏览器打开服务地址，只会看到一页「请用 DropSluice App 打开」的引导，不提供网页版。
+- 服务默认监听 `0.0.0.0:18888`，但配对码只能在这台电脑上开出来，手机要拿 6 位码换令牌。
+
+---
+
+## 为什么敢说「没有压缩」
+
+有些工具会顺手把照片转个格式、把视频转一遍码率，或者把 zip 重新压一遍。这里不做这些：
+
+1. 下载走的是原始字节流，带 `Content-Length`，响应头写 `Cache-Control: no-store, no-transform`，也没有 `Content-Encoding`。
+2. 打包用 store 模式 zip：只写目录信息，不压内容，zip 里每个文件的字节跟磁盘上完全一样。
+3. 有自测兜着：脚本下载一个 4.5 MB 的伪随机文件比对 SHA256，再把打好的 zip 解开逐字节比。
+
+这三条都在本机跑过，具体见下面的「已验证 / 未验证」。
+
+---
+
+## 长什么样
 
 手机端（左：开场选盘符和常用目录；右：进到某个文件夹，文件带大小，点一下就下载）：
 
@@ -372,7 +386,7 @@ keytool -genkeypair -keystore build/dropsluice-release.jks -alias dropsluice `
 
 ---
 
-## 7. 已验证 / 未验证（诚实清单）
+## 7. 已验证 / 未验证
 
 **已验证（都有脚本或命令可复跑）：**
 
