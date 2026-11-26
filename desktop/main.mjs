@@ -84,6 +84,9 @@ const ASSET_FILES = [
   'pair.html',
   'pair.js',
   'desktop.html',
+  'need-app.html',
+  'downloads.html',
+  'downloads.js',
 ];
 
 /** 单文件 exe 里没有磁盘上的 public/，静态资源从 SEA 里取 */
